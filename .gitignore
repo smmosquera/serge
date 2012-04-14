@@ -1,4 +1,4 @@
 # Python stuff
-.svn
 *.pyc
 *.*~
+.*
