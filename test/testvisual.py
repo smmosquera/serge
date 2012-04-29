@@ -120,6 +120,20 @@ class TestVisual(unittest.TestCase, VisualTester):
         serge.visual.Register.registerItem('green', p('greenship.png'))
         g = serge.visual.Register.getItem('green')
         
+    def testCanDuplicateASprite(self):
+        """testCanDuplicateASprite: should be able to duplicate a sprite"""
+        serge.visual.Register.registerItem('green', p('greenship.png'))
+        serge.visual.Register.duplicateItem('green', 'blue')
+        g = serge.visual.Register.getItem('green')
+        b = serge.visual.Register.getItem('blue')
+        self.assertEqual(g.width, b.width)
+        self.assertEqual(g.height, b.height)
+
+    def testFailDuplicateMissingSprite(self):
+        """testFailDuplicateMissingSprite: should fail when duplicating a missing sprite"""
+        serge.visual.Register.registerItem('green', p('greenship.png'))
+        self.assertRaises(serge.registry.UnknownItem, serge.visual.Register.duplicateItem, 'greenxxx', 'blue')
+    
     def testFailIfGetAMissingSprite(self):
         """testFailIfGetAMissingSprite: should fail if missing a """
         self.assertRaises(serge.registry.UnknownItem, serge.visual.Register.getItem, 'green')

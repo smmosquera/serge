@@ -87,4 +87,12 @@ class GeneralStore(serialize.Serializable):
         except KeyError:
             raise UnknownItem('The item called "%s" could not be found' % name)
         
-        
+    def duplicateItem(self, name, new_name):
+        """Create a duplicate of the named item with a new name"""
+        #
+        # Find parameters of this item
+        parameters = [item for item in self.raw_items if item[0] == name]
+        if len(parameters) == 0:
+            raise UnknownItem('The item "%s" was not in the collection' % name)
+        #
+        self.registerItem(new_name, *parameters[0][1:])
