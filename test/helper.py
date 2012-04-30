@@ -109,3 +109,14 @@ class FakeKeyboard(object):
     def update(self, interval):
         pass
 
+
+class FakeMouse(object):
+
+    def __init__(self):
+        """Initialise the mouse"""
+        self.x = self.y = 0 
+        
+    def getScreenPos(self):
+        """Return the screen pos"""
+        return (self.x, self.y)
+        

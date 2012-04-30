@@ -284,6 +284,10 @@ class ActorCollection(list):
         """Return True if the collection contains an actor with the given name"""
         return self.numberOfActorsWithName(name) > 0
 
+    def hasActor(self, actor):
+        """Return True if we have that actor"""
+        return actor in self
+
     def forEach(self):
         """Returns an object suitable for mapping method calls to all the actors in the collection
         
@@ -485,6 +489,7 @@ class AbstractMountableActor(CompositeActor):
             self.setAngle(old_angle)
         #
         actor.lock = PositionLock('is mounted to %s' % self.getNiceName())
+        return actor
         
     def unmountActor(self, actor):
         """Unmount the actor"""

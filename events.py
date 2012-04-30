@@ -66,6 +66,10 @@ E_ACTOR_ARRIVED = 'actor-arrived'
 # Events related to sound and music
 E_TRACK_ENDED = 'track-ended'
 
+# Drag and drop events
+E_DRAG_START = 'drag-start'
+E_DRAG_ENDED = 'drag-ended'
+E_DROPPED_ON = 'dropped-on'
 
 ### The global event broadcasting system ###
 
