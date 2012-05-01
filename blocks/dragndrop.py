@@ -17,7 +17,7 @@ class DragController(serge.blocks.actors.ScreenActor):
         """Initialise the controller"""
         super(DragController, self).__init__(tag, name)
         self.draggables = serge.actor.ActorCollection()
-        self.targets = serge.actor.ActorCollection()
+        self.targets = {}
         self.dragging = self._last_dragged = None
         self.drag_x = self.drag_y = 0.0
         self.setCallbacks(start, stop)
@@ -39,18 +39,16 @@ class DragController(serge.blocks.actors.ScreenActor):
 
     def addDropTarget(self, actor, fn=None):
         """Add a target to drop to"""
-        if actor in self.targets:
+        if actor in self.targets.keys():
             raise AlreadyATarget('The target %s is already a drop target for %s' % (actor.getNiceName(), self.getNiceName()))
         else:
-            self.targets.append(actor)
-            actor.linkEvent(serge.events.E_LEFT_CLICK, self.droppedOn, (actor, fn))
+            self.targets[actor] = fn
 
     def removeDropTarget(self, actor):
         """Remove an actor as a drop target"""
         try:
-            self.targets.remove(actor)
-            actor.unlinkEvent(serge.events.E_LEFT_CLICK, self.droppedOn)
-        except ValueError:
+            del(self.targets[actor])
+        except KeyError:
             raise NotATarget('The actor %s was not a target in %s' % (actor.getNiceName(), self.getNiceName()))
 
     def isDragging(self):
@@ -67,7 +65,7 @@ class DragController(serge.blocks.actors.ScreenActor):
     def mouseDown(self, obj, (actor, fn)):
         """The mouse was down over an actor"""
         if self.active and not self.dragging:
-            self.dragging = self._last_dragged = actor
+            self.dragging = actor
             self.drag_x, self.drag_y = self.mouse.getScreenPos()
             if fn:
                 fn(obj, actor)
@@ -77,30 +75,37 @@ class DragController(serge.blocks.actors.ScreenActor):
     def clickedActor(self, obj, (actor, fn)):
         """The mouse was released over an actor"""
         if self.active and self.dragging:
-            self.dragging = None
             if fn:
-                fn(obj, actor)
+                fn(obj, self.dragging)
             if self._stop:
-                self._stop(obj, actor)
-            self.checkForMiss(actor)
+                self._stop(obj, self.dragging)
+            self.checkForDrops(self.dragging)
+            self.dragging = None
             
-    def checkForMiss(self, actor):
-        """Check to see if we dropped our actor and missed all the targets - if so call the miss callback"""
+    def checkForDrops(self, actor):
+        """Check to see if we dropped our actor onto a target or not
+        
+        If we dropped on a target then we can call the callback. If
+        we didn't drop on a target then we call the miss callback.
+        
+        """
         #
-        # Only makes sense to do this if we are going to call a callback
-        if not self._miss:
-            return
-        #
-        # This doesn't feel like the implementation is really correct here but it
-        # works for the moment
+        # Go through all the targets looking for the one we dropped on (use the mouse
+        # as the test point)
+        hit = False
         test = serge.geometry.Point(*self.mouse.getScreenPos())
-        for target in self.targets:
+        for target, fn in self.targets.iteritems():
             if actor != target and test.isInside(target):
-                # Ok, overlaps at least one target
-                return
+                # Ok, dropped on this target
+                hit = True
+                if fn:
+                    fn(target, actor)
+                if self._hit:
+                    self._hit(target, actor)
         #
         # No targets were overlapped - so call the miss callback
-        self._miss(actor)
+        if not hit and self._miss:
+            self._miss(actor)
         
         
     def updateActor(self, interval, world):
@@ -122,11 +127,4 @@ class DragController(serge.blocks.actors.ScreenActor):
         self._hit = hit
         self._miss = miss
 
-    def droppedOn(self, obj, (actor, fn)):
-        """An actor was dropped on a target"""
-        if actor != self._last_dragged:
-            if fn:
-                fn(actor, self._last_dragged)
-            if self._hit:
-                self._hit(actor, self._last_dragged)
                 

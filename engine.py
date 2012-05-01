@@ -21,7 +21,7 @@ pygame.init()
 class Engine(common.Loggable, serialize.Serializable, common.EventAware):
     """The main Serge engine
     
-    The engine essentially manages a set of world and allows
+    The engine essentially manages a set of worlds and allows
     a single world, the current world, to be automatically
     updated on a certain time frequency.
     

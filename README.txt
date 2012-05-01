@@ -62,4 +62,7 @@ What's New
     Added a parameter in common to set the number of pygame audio channels to use
     Added behaviour to remove an actor when it is out of range
     Added behaviour to move an actor with a constant velocity
+0.3.4
+    Added duplicateItem method to registry to allow creation of aliased items
+    Implemented a dragndrop block to help with drag and drop operations
     
