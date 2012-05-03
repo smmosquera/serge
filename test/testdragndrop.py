@@ -59,9 +59,18 @@ class TestDragNDrop(unittest.TestCase):
         """Dropped on a target"""
         self.drop = obj, arg       
         
+    def _drop_fail(self, obj, arg):
+        """Dropped on a target but do not let it happen"""
+        self.drop = obj, arg       
+        raise serge.blocks.dragndrop.DropNotAllowed
     def _miss(self, obj):
         """Missed a drop"""
         self.miss = obj     
+
+    def _miss_fail(self, obj):
+        """Missed a drop but don't let the drop happen"""
+        self.miss = 'ouch'
+        raise serge.blocks.dragndrop.DropNotAllowed
 
     def testCanAddActor(self):
         """testCanAddActor: should be able to add an actor"""
@@ -271,7 +280,46 @@ class TestDragNDrop(unittest.TestCase):
         self.a.processEvent((serge.events.E_LEFT_CLICK, self.a))
         self.assertEqual(None, self.drop)
         self.assertEqual(self.a, self.miss)
+    
+    def testCanCancelDropOnMiss(self):
+        """testCanCancelDropOnMiss: should be able to cancel a drop on a miss"""
+        self.c.addActor(self.a, self._start, self._stop)
+        self.c.setDropCallbacks(None, self._miss_fail)
+        self.c.addDropTarget(self.d1, self._drop)
+        self.c.addDropTarget(self.d2, self._drop)
+        self.a.moveTo(0, 0)
+        self.drop = None
+        self.miss = None
+        self.mouse.x, self.mouse.y = 0, 0
+        self.a.processEvent((serge.events.E_LEFT_MOUSE_DOWN, self.a))
+        #
+        # Drag the actor
+        self.mouse.x, self.mouse.y = 50, 50
+        self.world.updateWorld(100)
+        #
+        self.a.processEvent((serge.events.E_LEFT_CLICK, self.a))
+        self.assertEqual(self.a, self.c.getDraggedActor())
+        self.assertTrue(self.c.isDragging())
         
+    def testCanCancelDropOnTarget(self):
+        """testCanCancelDropOnTarget: should be able to cancel a drop on a hit"""
+        self.c.addActor(self.a, self._start, self._stop)
+        self.c.addDropTarget(self.d1, self._drop_fail)
+        self.c.addDropTarget(self.d2, self._drop_fail)
+        self.a.moveTo(0, 0)
+        self.drop = None
+        self.mouse.x, self.mouse.y = 0, 0
+        self.a.processEvent((serge.events.E_LEFT_MOUSE_DOWN, self.a))
+        #
+        # Drag the actor
+        self.mouse.x, self.mouse.y = 102, 102
+        self.world.updateWorld(100)
+        #
+        self.a.processEvent((serge.events.E_LEFT_CLICK, self.a))
+        self.d1.processEvent((serge.events.E_LEFT_CLICK, self.a))
+        self.assertTrue(self.c.isDragging())
+        
+       
     def testCanRemoveADropTarget(self):
         """testCanRemoveADropTarger: should be able to remove a drop target"""
         self.c.addActor(self.a, self._start, self._stop)

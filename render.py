@@ -81,7 +81,7 @@ class Renderer(common.Loggable, serialize.Serializable, common.EventAware):
             if layer.name == name:
                 return layer
         else:
-            raise UnknownLayer('No layer with name "%s" was found' % name)
+            raise UnknownLayer('No layer with name "%s" was found' % (name,))
 
     def getLayerBefore(self, layer):
         """Return the layer before the specified one in terms of rendering order"""

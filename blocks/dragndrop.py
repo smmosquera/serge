@@ -8,6 +8,7 @@ class NotDragging(Exception): """No actor is being dragged"""
 class DuplicateActor(Exception): """The actor is already controlled"""
 class NotATarget(Exception): """The actor is not a target"""
 class AlreadyATarget(Exception): """The actor is a target already"""
+class DropNotAllowed(Exception): """Cannot drop here"""
 
 
 class DragController(serge.blocks.actors.ScreenActor):
@@ -75,37 +76,55 @@ class DragController(serge.blocks.actors.ScreenActor):
     def clickedActor(self, obj, (actor, fn)):
         """The mouse was released over an actor"""
         if self.active and self.dragging:
-            if fn:
-                fn(obj, self.dragging)
-            if self._stop:
-                self._stop(obj, self.dragging)
-            self.checkForDrops(self.dragging)
-            self.dragging = None
+            #
+            # Check to see where we are dropping
+            if self.checkForDrops(self.dragging):
+                #
+                # Dropping was allowed - so cancel drag and call any callbacks
+                self.dragging = None
+                if fn:
+                    fn(obj, self.dragging)
+                if self._stop:
+                    self._stop(obj, self.dragging)
+            else:
+                #
+                # The drop target would not allow us to be dropped
+                self.log.debug('Drop not allowed')
             
     def checkForDrops(self, actor):
-        """Check to see if we dropped our actor onto a target or not
+        """Check to see if we dropped our actor onto a target or not - return False if the drop is not allowed
         
         If we dropped on a target then we can call the callback. If
         we didn't drop on a target then we call the miss callback.
+        
+        The callback can raise DropNotAllowed to cause the drop not to occur
         
         """
         #
         # Go through all the targets looking for the one we dropped on (use the mouse
         # as the test point)
         hit = False
+        allowed = True
         test = serge.geometry.Point(*self.mouse.getScreenPos())
         for target, fn in self.targets.iteritems():
             if actor != target and test.isInside(target):
                 # Ok, dropped on this target
                 hit = True
-                if fn:
-                    fn(target, actor)
-                if self._hit:
-                    self._hit(target, actor)
+                for callback in (fn, self._hit):
+                    if callback:
+                        try:
+                            callback(target, actor)
+                        except DropNotAllowed:
+                            allowed = False
         #
         # No targets were overlapped - so call the miss callback
         if not hit and self._miss:
-            self._miss(actor)
+            try:
+                self._miss(actor)
+            except DropNotAllowed:
+                allowed = False
+        #
+        return allowed
         
         
     def updateActor(self, interval, world):
