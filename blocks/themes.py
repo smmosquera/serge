@@ -103,6 +103,18 @@ class Manager(object):
             else:
                 return self.getProperty(name, theme[0])
 
+    def getPropertyWithDefault(self, name, default, from_theme=None):
+        """Return a property and if it is missing then return the default value
+        
+        Use this method sparingly. It puts default values in source code
+        rather than in the theme files.
+        
+        """
+        try:
+            return self.getProperty(name, from_theme)
+        except PropertyNotFound:
+            return default
+            
     def setProperty(self, name, value, from_theme=None):
         """Set a property in a theme"""
         try:

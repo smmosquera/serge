@@ -115,7 +115,9 @@ def addTextToWorld(world, text, name, theme, layer_name):
     L = theme.getProperty
     actor = addVisualActorToWorld(world, 'text', name, 
                 serge.visual.Text(text, L('%s-colour' % name), 
-                font_size=L('%s-font-size' % name)), layer_name, 
+                    font_size=L('%s-font-size' % name),
+                    font_name=theme.getPropertyWithDefault(('%s-font' % name), 'DEFAULT')), 
+                layer_name, 
                 center_position=L('%s-position' % name))
     return actor
 

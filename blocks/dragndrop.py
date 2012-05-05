@@ -81,11 +81,11 @@ class DragController(serge.blocks.actors.ScreenActor):
             if self.checkForDrops(self.dragging):
                 #
                 # Dropping was allowed - so cancel drag and call any callbacks
-                self.dragging = None
                 if fn:
                     fn(obj, self.dragging)
                 if self._stop:
                     self._stop(obj, self.dragging)
+                self.dragging = None
             else:
                 #
                 # The drop target would not allow us to be dropped

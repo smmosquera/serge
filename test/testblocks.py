@@ -1476,7 +1476,13 @@ class TestThemeBlocks(unittest.TestCase):
         self.m.loadFrom(self.base_theme)
         self.assertRaises(serge.blocks.themes.ThemeNotFound, self.m.getTheme, 'dddaaa')
         
-    
+    def testCanGetPropertyValueWithDefault(self):
+        """testCanGetPropertyValueWithDefault: should be able to get a property value with a default"""
+        self.m.loadFrom(self.base_theme)
+        self.assertRaises(serge.blocks.themes.PropertyNotFound, self.m.getProperty, 'x')
+        self.assertEqual(123, self.m.getPropertyWithDefault('x', 123))
+        
+        
 class TestVisualEffects(unittest.TestCase, VisualTester):
     """Tests for the VisualEffects"""
 
