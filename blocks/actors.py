@@ -329,8 +329,10 @@ class FPSDisplay(NumericText):
         super(FPSDisplay, self).addedToWorld(world)
         #
         self.moveTo(self.ix, self.iy)  
-
         
     def updateActor(self, interval, world):
         """Update the actor"""
+        super(FPSDisplay, self).updateActor(interval, world)
         self.value = self.engine.getStats().average_frame_rate
+        
+        

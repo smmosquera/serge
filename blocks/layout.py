@@ -82,12 +82,16 @@ class HorizontalBar(Bar):
         """Reset the locations of the objects within us"""
         self.log.debug('Resetting locations')
         if self.children:
-            width = float(self.width) / len(self.children)
-            left, top, _, _ = self.getSpatial()
             for i, actor in enumerate(self.children):
-                actor.moveTo(left + width*(i+0.5), top + self.height*0.5)
+                actor.moveTo(*self.getCoords(i))
                 self.log.debug('Set %s to %d, %d' % (actor.getNiceName(), actor.x, actor.y))
-        
+
+    def getCoords(self, i):
+        """Return the coordinates of our ith location"""
+        width = float(self.width) / len(self.children)
+        left, top, _, _ = self.getSpatial()
+        return left + width*(i+0.5), top + self.height*0.5
+               
 class VerticalBar(Bar):
     """A vertical bar of actors"""
     

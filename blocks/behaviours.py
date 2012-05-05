@@ -7,6 +7,7 @@ import serge.actor
 import serge.engine
 import serge.common
 import serge.events
+Vec2d = serge.common.pymunk.Vec2d
 
 class MissingBehaviour(Exception): """Could not locate the behaviour"""
 class DuplicateBehaviour(Exception): """The behaviour was already recorded"""
@@ -258,6 +259,45 @@ class MoveTowardsPoint(Behaviour):
             actor.y += min(dy, self._y_speed)
         elif dy < 0:
             actor.y -= min(abs(dy), self._y_speed)
+        #
+        if dx == dy == 0:
+            return B_COMPLETED
+
+class SpringTowardsPoint(Behaviour):
+    """Move an actor towards a point as if on a spring"""
+    
+    def __init__(self, point, spring_constant, damping, dead_zone=0.1):
+        """Initialise the behaviour
+        
+        We use Hooke's law - the force is proportional to the 
+        displacement. Damping is based on the velocity 
+        
+        The dead zone is the distance from the target at which we
+        stop trying to move
+        
+        """
+        super(SpringTowardsPoint, self).__init__()
+        self._target = Vec2d(*point)
+        self._spring_constant = spring_constant
+        self._damping = damping
+        self._dead_zone = dead_zone
+        self._v = Vec2d(0, 0)
+        
+    def __call__(self, world, actor, interval):
+        """Do the movement"""
+        #
+        # Forces
+        offset = self._target - Vec2d(actor.x, actor.y)
+        force = self._spring_constant*offset.length*offset.normalized()
+        damping = -self._damping*self._v
+        #
+        # Update velocity and position
+        self._v += (force + damping)*interval/1000.0
+        dx, dy = self._v*interval/1000.0
+        actor.move(dx, dy)
+        #
+        if offset.length < self._dead_zone:
+            return B_COMPLETED
 
 
 class MoveTowardsActor(Behaviour):
