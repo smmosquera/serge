@@ -301,31 +301,40 @@ class ProxyLauncher(object):
     
     def __init__(self, items):
         """Intialise the proxy"""
-        self.items = items
+        self._items = items
         
     def __getattr__(self, name):
         """Return a mapped attribute call"""
-        return MapperList(self.items, name)
+        return MapperList(self._items, name)
+
+    def __setattr__(self, name, value):
+        """Set an attribute of the list"""
+        if name.startswith('_'):
+            self.__dict__[name] = value
+        else:
+            for item in self._items:
+                setattr(item, name, value)
 
 class MapperList(object):
     
     def __init__(self, items, method_name):
         """Intialise the mapper"""
-        self.items = items
-        self.method_name = method_name
+        self._items = items
+        self._method_name = method_name
         
     def __call__(self, *args, **kw):
         """Make the call"""
         results = []
-        for item in self.items:
+        for item in self._items:
             try:
-                result = getattr(item, self.method_name)(*args, **kw)
+                result = getattr(item, self._method_name)(*args, **kw)
             except StopIteration:
                 break
             else:
                 results.append(result)
         return results
-            
+
+                    
           
 class CompositeActor(Actor):
     """An actor that can have children, which are also actors

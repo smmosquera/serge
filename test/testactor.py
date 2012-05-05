@@ -918,7 +918,16 @@ class TestActorCollections(unittest.TestCase):
         result = self.c.forEach().raisename('b1')
         self.assertEqual(['b1']*3, result)
         
-    
+    def testCanSetAttributesInForEach(self):
+        """testCanSetAttributesInForEach: should be able to set attributes in a for each"""
+        self.c.forEach().visible = True
+        self.assertTrue(self.a1.visible)
+        self.assertTrue(self.b2.visible)
+        self.c.forEach().visible = False
+        self.assertFalse(self.a1.visible)
+        self.assertFalse(self.b2.visible)
+        
+        
     
 
 class MyActor(serge.actor.Actor):
