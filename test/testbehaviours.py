@@ -266,7 +266,46 @@ class TestBehaviours(unittest.TestCase):
         self.assertEqual((self.w, a, 1000), self.state.get('done2', 'doit was not called'))
         self.assert_('done' not in self.state)
 
+    def testCanHaveSequenceOfBehaviours(self):
+        """testCanHaveSequenceOfBehaviours: should be able to have a sequence of behaviours"""
+        a = serge.blocks.utils.addVisualActorToWorld(self.w, 'a', 'a', self.v, '', (10,0))
+        #
+        seq = serge.blocks.behaviours.OneShotSequence([
+            serge.blocks.behaviours.TimedOneshotCallback(2000, self.doit),
+            serge.blocks.behaviours.TimedOneshotCallback(2000, self.doit2),
+        ])        
+        record = self.b.assignBehaviour(a, seq, 'sequence')
+        self.assertTrue(self.b.hasBehaviour(record))
+        #
+        # Initial condition
+        self.assertFalse('done' in self.state)
+        self.assertFalse('done2' in self.state)
+        #
+        # Wait but not long enough to trigger first
+        self.w.updateWorld(1000)
+        self.assertFalse('done' in self.state)
+        self.assertFalse('done2' in self.state)
+        #
+        # Wait enough to trigger first        
+        self.w.updateWorld(1500)
+        self.assertTrue('done' in self.state)
+        self.assertFalse('done2' in self.state)
+        #
+        # Wait but not long enough to trigger second
+        self.w.updateWorld(1000)
+        self.assertTrue('done' in self.state)
+        self.assertFalse('done2' in self.state)
+        #
+        # Wait long enough to trigger second
+        self.w.updateWorld(1000)
+        self.assertTrue('done' in self.state)
+        self.assertTrue('done2' in self.state)
+        #
+        # Behaviours should be gone
+        self.w.updateWorld(1000)
+        self.assertFalse(self.b.hasBehaviour(record))
 
+        
     def testCanHaveTimer(self):
         """testCanHaveTimer: should be able to use a timer"""
         a = serge.blocks.utils.addVisualActorToWorld(self.w, 'a', 'a', self.v, '', (10,0))

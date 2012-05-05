@@ -482,6 +482,31 @@ class Optional(TwoOptions):
         super(Optional, self).__init__(behaviour, lambda a,b,c:None, arg, selector)         
 
 
+class OneShotSequence(Behaviour):
+    """A behaviour that calls a sequence of other behaviours"""
+
+    def __init__(self, sequence):
+        """Initialise the OneShotSequence"""
+        self._sequence = sequence
+        self._working_on = None
+        self._record = None
+        
+    def __call__(self, world, actor, interval):
+        """Process the sequence"""
+        if self._working_on is None:
+            if not self._sequence:
+                return B_COMPLETED
+            else:
+                self._working_on = self._sequence.pop(0)
+                self._record = BehaviourRecord(actor, self._working_on, 'oneshotsequence')
+        #
+        # Call our first behaviour
+        result = self._record.performBehaviour(interval, world)
+        if self._record.isComplete():
+            self._working_on = None
+        
+
+
 ### Control behaviours ###
 
 
@@ -601,7 +626,7 @@ class TimedOneshotCallback(TimedCallback):
         """Check for the interval"""
         super(TimedOneshotCallback, self).__call__(world, actor, interval)
         if self._number_calls:
-            self.record.pause()
+            return B_COMPLETED
             
 class ParallaxMotion(Behaviour):
     """Move one object in relation to another"""
