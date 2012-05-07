@@ -497,8 +497,8 @@ class OneShotSequence(Behaviour):
             if not self._sequence:
                 return B_COMPLETED
             else:
-                self._working_on = self._sequence.pop(0)
-                self._record = BehaviourRecord(actor, self._working_on, 'oneshotsequence')
+                target_actor, self._working_on = self._sequence.pop(0)
+                self._record = BehaviourRecord(target_actor, self._working_on, 'oneshotsequence')
         #
         # Call our first behaviour
         result = self._record.performBehaviour(interval, world)
@@ -627,6 +627,18 @@ class TimedOneshotCallback(TimedCallback):
         super(TimedOneshotCallback, self).__call__(world, actor, interval)
         if self._number_calls:
             return B_COMPLETED
+
+class Delay(TimedOneshotCallback):
+    """A delay - just waits and then completes
+    
+    Usefor for sequences
+    
+    """
+    
+    def __init__(self, interval):
+        """Initialise the delay"""
+        super(Delay, self).__init__(interval, lambda w, a, i: None)
+        
             
 class ParallaxMotion(Behaviour):
     """Move one object in relation to another"""

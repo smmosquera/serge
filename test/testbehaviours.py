@@ -269,10 +269,11 @@ class TestBehaviours(unittest.TestCase):
     def testCanHaveSequenceOfBehaviours(self):
         """testCanHaveSequenceOfBehaviours: should be able to have a sequence of behaviours"""
         a = serge.blocks.utils.addVisualActorToWorld(self.w, 'a', 'a', self.v, '', (10,0))
+        b = serge.blocks.utils.addVisualActorToWorld(self.w, 'b', 'b', self.v, '', (10,0))
         #
         seq = serge.blocks.behaviours.OneShotSequence([
-            serge.blocks.behaviours.TimedOneshotCallback(2000, self.doit),
-            serge.blocks.behaviours.TimedOneshotCallback(2000, self.doit2),
+            (a, serge.blocks.behaviours.TimedOneshotCallback(2000, self.doit)),
+            (b, serge.blocks.behaviours.TimedOneshotCallback(2000, self.doit2)),
         ])        
         record = self.b.assignBehaviour(a, seq, 'sequence')
         self.assertTrue(self.b.hasBehaviour(record))
@@ -289,6 +290,7 @@ class TestBehaviours(unittest.TestCase):
         # Wait enough to trigger first        
         self.w.updateWorld(1500)
         self.assertTrue('done' in self.state)
+        self.assertEqual((self.w, a, 1500), self.state['done'])
         self.assertFalse('done2' in self.state)
         #
         # Wait but not long enough to trigger second
@@ -300,6 +302,7 @@ class TestBehaviours(unittest.TestCase):
         self.w.updateWorld(1000)
         self.assertTrue('done' in self.state)
         self.assertTrue('done2' in self.state)
+        self.assertEqual((self.w, b, 1000), self.state['done2'])
         #
         # Behaviours should be gone
         self.w.updateWorld(1000)
