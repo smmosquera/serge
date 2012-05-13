@@ -50,6 +50,10 @@ class TestDragNDrop(unittest.TestCase):
     def _start(self, obj, arg):
         """Start of drag"""
         self.start = True
+
+    def _start_switch(self, obj, arg):
+        """Start of drag"""
+        return self.b
         
     def _stop(self, obj, arg):
         """Stop drag"""
@@ -377,7 +381,29 @@ class TestDragNDrop(unittest.TestCase):
         self.d2.processEvent((serge.events.E_LEFT_CLICK, self.a))
         self.assertEqual((self.d2, self.a), self.drop)
         
-        
+    def testCanStartToDragAlteringObject(self):
+        """testCanStartToDrag: should be able to start to drag and set a different object to drag"""
+        self.c.addActor(self.a)
+        self.c.setCallbacks(self._start_switch, None)
+        self.a.moveTo(0, 0)
+        self.b.moveTo(0, 0)
+        self.assertFalse(self.c.isDragging())
+        self.assertRaises(serge.blocks.dragndrop.NotDragging, self.c.getDraggedActor)
+        self.mouse.x = 10
+        self.mouse.y = 20
+        self.a.processEvent((serge.events.E_LEFT_MOUSE_DOWN, self.a))
+        self.assertTrue(self.c.isDragging())
+        self.assertEqual(self.b, self.c.getDraggedActor())
+        #
+        self.mouse.x = 15
+        self.mouse.y = 26
+        self.world.updateWorld(100)
+        #
+        self.assertEqual(5, self.b.x)
+        self.assertEqual(6, self.b.y)
+        self.assertEqual(0, self.a.x)
+        self.assertEqual(0, self.a.y)
+
     
 if __name__ == '__main__':
     unittest.main()

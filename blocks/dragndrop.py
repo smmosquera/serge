@@ -68,10 +68,17 @@ class DragController(serge.blocks.actors.ScreenActor):
         if self.active and not self.dragging:
             self.dragging = actor
             self.drag_x, self.drag_y = self.mouse.getScreenPos()
+            #
+            # We allow the callbacks to return an actor, which will be used
+            # as the dragged object
+            dragger = None
             if fn:
-                fn(obj, actor)
+                dragger = fn(obj, actor)
             if self._start:
-                self._start(obj, actor)
+                dragger = dragger if dragger else self._start(obj, actor)
+            #
+            if dragger:
+                self.dragging = dragger
             
     def clickedActor(self, obj, (actor, fn)):
         """The mouse was released over an actor"""
