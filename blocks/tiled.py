@@ -22,20 +22,16 @@ LAYER_TYPES = (
     'resistance',   # Resistance to movement
 )
 
-class Tiled(serge.common.Loggable):
-    """An interface to tiled files"""
+
+class TileMap(serge.common.Loggable):
+    """A representation of a 2d map of tiles"""
     
-    layer_types = list(LAYER_TYPES)
-    
-    def __init__(self, filename):
+    def __init__(self):
         """Initialise the Tiled"""
         self.addLogger()
-        self.filename = filename
-        self._registerSprites()
-        self._parseLayers()
-        self._parseObjectLayers()
-        self.layer_types = list(LAYER_TYPES)
-    
+        self.layers = []
+        TileMap.resetLayerTypes()
+
     @classmethod    
     def resetLayerTypes(cls):
         """Reset the layer types to default"""
@@ -45,107 +41,16 @@ class Tiled(serge.common.Loggable):
     def addLayerTypes(cls, layer_types):
         """Add more layer types"""
         cls.layer_types.extend(layer_types)
-                    
-    def _registerSprites(self):
-        """Register all the sprites"""
-        self.log.info('Parsing sprites from %s' % self.filename)
-        try:
-            tree = ElementTree().parse(self.filename)
-        except Exception, err:
-            raise BadTiledFile('Unable to load XML file "%s": %s' % (self.filename, err))
-        #
-        # Find all tilesets in the file
-        self.tilesets = []
-        for tileset in tree.findall('.//tileset'):
-            self.log.debug('Found tileset "%s"' % tileset.attrib['name'])
-            width, height = int(tileset.attrib['tilewidth']), int(tileset.attrib['tileheight'])
-            image = tileset.find('image')
-            source = os.path.join(os.path.dirname(self.filename), image.attrib['source'])
-            source_width, source_height = int(image.attrib['width']), int(image.attrib['height'])
-            #
-            # Create all images
-            number = ((source_width*source_height)/(width*height))
-            names = ['%s-%d' % (tileset.attrib['name'], idx) for idx in range(1, number+1)]
-            serge.visual.Sprites.registerMultipleItems(names, source, source_width/width, source_height/height)
-            self.log.debug('Created %d tiles' % number)
-            #
-            self.tilesets.append((tileset.attrib['name'], number+int(tileset.attrib['firstgid'])))
 
-    def _parseLayers(self):
-        """Parse the layers"""
-        self.log.info('Parsing layers from %s' % self.filename)
-        self.layers = layers = []
-        #
-        try:
-            tree = ElementTree().parse(self.filename)
-        except Exception, err:
-            raise BadTiledFile('Unable to load XML file "%s": %s' % (self.filename, err))
-        #
-        self.width, self.height = int(tree.attrib['width']), int(tree.attrib['height'])
-        #
-        # Find all layers
-        for layer in tree.findall('.//layer'):
-            name = layer.attrib['name']
-            self.log.debug('Found layer "%s"' % name)
-            width, height = int(layer.attrib['width']), int(layer.attrib['height'])                    
-            #
-            # Get all data
-            data = []
-            for r, row in enumerate(layer.find('data').text.strip().split('\n')):
-                data.append([])
-                for c, col in enumerate(row.rstrip(',').split(',')):
-                    data[-1].append(int(col))
-            #
-            properties = self.getPropertiesFrom(layer.findall('properties/property'))
-            layer_type = self.getTypeFrom(name, properties)
-            layers.append(Layer(self, name, layer_type, width, height, data, properties))
-
-    def _parseObjectLayers(self):
-        """Return the layers of objects"""
-        self.log.info('Parsing object layers from %s' % self.filename)
-        self.object_layers = []
-        #
-        try:
-            tree = ElementTree().parse(self.filename)
-        except Exception, err:
-            raise BadTiledFile('Unable to load XML file "%s": %s' % (self.filename, err))
-        #
-        # Find all layers
-        for layer in tree.findall('.//objectgroup'):
-            name = layer.attrib['name']
-            self.log.debug('Found layer "%s"' % name)
-            properties = self.getPropertiesFrom(layer.findall('properties/property'))
-            width, height = int(layer.attrib['width']), int(layer.attrib['height'])                    
-            new_layer = Layer(self, name, properties.get('type', 'object'), width, height, None, properties)
-            #
-            # Look for ad-hoc visual layer
-            if properties.get('type', '') == 'adhoc-visual':
-                self.layers.append(new_layer)
-                # 
-                # Find sprites in this layer
-                for obj in layer.findall('object'):
-                    new_layer.addObject(TileObject(
-                        'tile', 'sprite', int(obj.attrib['x']), int(obj.attrib['y']), 
-                        int(obj.attrib.get('width', 0)), int(obj.attrib.get('height', 0)), 
-                        {}, self.getSpriteName(int(obj.attrib['gid']))))
-            else:
-                self.object_layers.append(new_layer)
-                #
-                # Find objects in this layer
-                for obj in layer.findall('object'):
-                    new_layer.addObject(TileObject(
-                        obj.attrib['name'], obj.attrib['type'], int(obj.attrib['x']), int(obj.attrib['y']), 
-                        int(obj.attrib.get('width', 0)), int(obj.attrib.get('height', 0)),
-                        self.getPropertiesFrom(obj.findall('properties/property'))))
-
+    def addLayer(self, layer):
+        """Add a layer"""
+        self.layers.append(layer)
+        return layer
+        
     def getLayers(self):
         """Return the layers of tiles"""
         return self.layers
 
-    def getObjectLayers(self):
-        """Return the object layers"""
-        return self.object_layers
-        
     def getLayersByType(self, type_name):
         """Return the layer with a given type"""
         return [layer for layer in self.getLayers() if layer.layer_type == type_name]
@@ -211,7 +116,7 @@ class Tiled(serge.common.Loggable):
         """Return a list of the layers that the tile at x, y is set on"""
         if excluding is None:
             excluding = []
-        return [layer for layer in self.getLayers() if layer.tiles[y][x] if layer.type not in excluding]
+        return [layer for layer in self.getLayers() if layer.tiles[y][x] if layer.layer_type not in excluding]
 
     def getPropertyBagArray(self, sprite_layers, boolean_layers, property_layers, prototype=None, optional_layers=None):
         """Return an array of property bags for the tile array
@@ -269,23 +174,152 @@ class Tiled(serge.common.Loggable):
         #
         return data
         
+        
+class Tiled(TileMap):
+    """An interface to tiled files"""
+    
+    layer_types = list(LAYER_TYPES)
+    
+    def __init__(self, filename):
+        """Initialise the Tiled"""
+        super(Tiled, self).__init__()
+        self.filename = filename
+        self._registerSprites()
+        self._parseLayers()
+        self._parseObjectLayers()
+                    
+    def _registerSprites(self):
+        """Register all the sprites"""
+        self.log.info('Parsing sprites from %s' % self.filename)
+        try:
+            tree = ElementTree().parse(self.filename)
+        except Exception, err:
+            raise BadTiledFile('Unable to load XML file "%s": %s' % (self.filename, err))
+        #
+        # Find all tilesets in the file
+        self.tilesets = []
+        for tileset in tree.findall('.//tileset'):
+            self.log.debug('Found tileset "%s"' % tileset.attrib['name'])
+            width, height = int(tileset.attrib['tilewidth']), int(tileset.attrib['tileheight'])
+            image = tileset.find('image')
+            source = os.path.join(os.path.dirname(self.filename), image.attrib['source'])
+            source_width, source_height = int(image.attrib['width']), int(image.attrib['height'])
+            #
+            # Create all images
+            number = ((source_width*source_height)/(width*height))
+            names = ['%s-%d' % (tileset.attrib['name'], idx) for idx in range(1, number+1)]
+            serge.visual.Sprites.registerMultipleItems(names, source, source_width/width, source_height/height)
+            self.log.debug('Created %d tiles' % number)
+            #
+            self.tilesets.append((tileset.attrib['name'], number+int(tileset.attrib['firstgid'])))
+
+    def _parseLayers(self):
+        """Parse the layers"""
+        self.log.info('Parsing layers from %s' % self.filename)
+        self.layers = layers = []
+        #
+        try:
+            tree = ElementTree().parse(self.filename)
+        except Exception, err:
+            raise BadTiledFile('Unable to load XML file "%s": %s' % (self.filename, err))
+        #
+        self.width, self.height = int(tree.attrib['width']), int(tree.attrib['height'])
+        #
+        # Find all layers
+        for layer in tree.findall('.//layer'):
+            name = layer.attrib['name']
+            self.log.debug('Found layer "%s"' % name)
+            width, height = int(layer.attrib['width']), int(layer.attrib['height'])                    
+            #
+            # Get all data
+            data = []
+            for r, row in enumerate(layer.find('data').text.strip().split('\n')):
+                data.append([])
+                for c, col in enumerate(row.rstrip(',').split(',')):
+                    data[-1].append(int(col))
+            #
+            properties = self.getPropertiesFrom(layer.findall('properties/property'))
+            layer_type = self.getTypeFrom(name, properties)
+            self.addLayer(Layer(self, name, layer_type, width, height, data, properties))
+
+    def _parseObjectLayers(self):
+        """Return the layers of objects"""
+        self.log.info('Parsing object layers from %s' % self.filename)
+        self.object_layers = []
+        #
+        try:
+            tree = ElementTree().parse(self.filename)
+        except Exception, err:
+            raise BadTiledFile('Unable to load XML file "%s": %s' % (self.filename, err))
+        #
+        # Find all layers
+        for layer in tree.findall('.//objectgroup'):
+            name = layer.attrib['name']
+            self.log.debug('Found layer "%s"' % name)
+            properties = self.getPropertiesFrom(layer.findall('properties/property'))
+            width, height = int(layer.attrib['width']), int(layer.attrib['height'])                    
+            new_layer = Layer(self, name, properties.get('type', 'object'), width, height, None, properties)
+            #
+            # Look for ad-hoc visual layer
+            if properties.get('type', '') == 'adhoc-visual':
+                self.layers.append(new_layer)
+                # 
+                # Find sprites in this layer
+                for obj in layer.findall('object'):
+                    new_layer.addObject(TileObject(
+                        'tile', 'sprite', int(obj.attrib['x']), int(obj.attrib['y']), 
+                        int(obj.attrib.get('width', 0)), int(obj.attrib.get('height', 0)), 
+                        {}, self.getSpriteName(int(obj.attrib['gid']))))
+            else:
+                self.object_layers.append(new_layer)
+                #
+                # Find objects in this layer
+                for obj in layer.findall('object'):
+                    new_layer.addObject(TileObject(
+                        obj.attrib['name'], obj.attrib['type'], int(obj.attrib['x']), int(obj.attrib['y']), 
+                        int(obj.attrib.get('width', 0)), int(obj.attrib.get('height', 0)),
+                        self.getPropertiesFrom(obj.findall('properties/property'))))
+
+    def getObjectLayers(self):
+        """Return the object layers"""
+        return self.object_layers
+        
+
+            
 class Layer(serge.common.Loggable):
     """A layer in a tilemap"""
 
-    def __init__(self, tiled, name, layer_type, width, height, tiles, properties):
+    def __init__(self, tiled, name, layer_type, width=None, height=None, tiles=None, properties=None):
         """Initialise the Layer"""
         self.addLogger()
         self.tiled = tiled
         self.name = name
         self.layer_type = layer_type
-        self.width = width
-        self.height = height
-        self.tiles = tiles
+        #
+        # Set initial size
+        if width and height:
+            self.width = width
+            self.height = height
+        elif tiles:
+            self.width, self.height = len(tiles[0]), len(tiles)
+        else:
+            raise ValueError('Must initialise Layer with either width, height or tiles')
+        #
+        # Set the tiles
+        if not tiles:
+            self.tiles = []
+            for row in range(self.height):
+                self.tiles.append([])
+                for col in range(self.height):
+                    self.tiles[-1].append([])
+        else:
+            self.tiles = tiles
+        #
         self.objects = []
         #
         # Set properties
-        self.properties = properties
-        for name, value in properties.iteritems():
+        self.properties = properties if properties is not None else {}
+        for name, value in self.properties.iteritems():
             setattr(self, name, value)
             
     def getSize(self):
@@ -337,6 +371,10 @@ class Layer(serge.common.Loggable):
         for y, row in enumerate(self.tiles):
             for x, item in enumerate(row):
                 yield (x, y)        
+
+
+
+
                   
 class TileObject(serge.common.Loggable):
     """A tile"""

@@ -10,6 +10,71 @@ import serge.visual
 import serge.registry
 import serge.blocks.tiled
 
+
+class TestTileMap(unittest.TestCase):
+    """Tests for the TileMap"""
+
+    def setUp(self):
+        """Set up the tests"""
+        serge.visual.Sprites.clearItems()
+        serge.blocks.tiled.TileMap.resetLayerTypes()
+        self.m = serge.blocks.tiled.TileMap()
+        self.t1 = [
+            [1,1,None],
+            [1,1,1],
+            [1,1,1],
+            [1,1,1],
+        ]
+                
+    def tearDown(self):
+        """Tear down the tests"""     
+
+    def testCanAddLayer(self):
+        """testCanAddLayer: should be able to add a layer"""
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', tiles=self.t1))
+                
+    def testCanSetTiles(self):
+        """testCanSetTiles: should be able to set tiles"""
+        l = self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', 3, 4))
+        for row in range(4):
+            for col in range(3):
+                l.tiles[row][col] = self.t1[row][col]
+        #
+        for row in range(4):
+            for col in range(3):
+                self.assertEqual(l.tiles[row][col], self.t1[row][col])
+                        
+    def testCanGetLayers(self):
+        """testCanGetLayers: should be able to get layers"""
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', tiles=self.t1))
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'two', 'movement', 4, 4))
+        l = self.m.getLayers()
+        self.assertEqual((3,4), l[0].getSize())
+        self.assertEqual((4,4), l[1].getSize())
+        
+    def testCanGetLayersByType(self):
+        """testCanGetLayersByType: should be able to get layers by type"""
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', tiles=self.t1))
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'two', 'movement', 4, 4))
+        l = self.m.getLayerByType('visual')
+        self.assertEqual((3,4), l.getSize())
+        l = self.m.getLayerByType('movement')
+        self.assertEqual((4,4), l.getSize())
+        
+    def testCanFindTileSetOn(self):
+        """testCanFindTileSetOn: should be able to find which layers a tile is set on"""
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', tiles=self.t1))
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'two', 'movement', 4, 4))
+        self.assertEqual(['visual'], [l.layer_type for l in self.m.getLayersForTile((1,1))])
+        self.assertEqual([], [l.layer_type for l in self.m.getLayersForTile((2,0))])
+        
+    def testCanFindId(self):
+        """testCanFindId: should be able to find the Id at a point"""
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', tiles=self.t1))
+        self.assertEqual(1, self.m.getLayer('one').tiles[0][0])
+                
+    
+
 class TestTiled(unittest.TestCase):
     """Tests for the Tiled"""
 
