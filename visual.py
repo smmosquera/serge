@@ -483,7 +483,12 @@ class Sprite(Drawing):
         self.setCell(0)
         self.direction = 1
         self.running = running
-               
+    
+    def getSurface(self):
+        """Return the current surface"""
+        return self.cells[self.current_cell]
+        
+                 
 class Text(Drawing):
     """Some text to display"""
     

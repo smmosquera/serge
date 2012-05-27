@@ -173,6 +173,10 @@ class TileMap(serge.common.Loggable):
                         setattr(data[y][x], name, value)
         #
         return data
+
+    def getSize(self):
+        """Return the size of the map using the first layer as a guide"""
+        return self.getLayers()[0].getSize()        
         
         
 class Tiled(TileMap):
@@ -310,8 +314,8 @@ class Layer(serge.common.Loggable):
             self.tiles = []
             for row in range(self.height):
                 self.tiles.append([])
-                for col in range(self.height):
-                    self.tiles[-1].append([])
+                for col in range(self.width):
+                    self.tiles[-1].append(False)
         else:
             self.tiles = tiles
         #

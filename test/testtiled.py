@@ -73,7 +73,12 @@ class TestTileMap(unittest.TestCase):
         self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', tiles=self.t1))
         self.assertEqual(1, self.m.getLayer('one').tiles[0][0])
                 
-    
+    def testCanGetSize(self):
+        """testCanGetSize: can try to get size"""
+        self.m.addLayer(serge.blocks.tiled.Layer(self.m, 'one', 'visual', tiles=self.t1))
+        self.assertEqual((3,4), self.m.getSize())
+                
+        
 
 class TestTiled(unittest.TestCase):
     """Tests for the Tiled"""
