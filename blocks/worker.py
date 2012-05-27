@@ -3,10 +3,12 @@
 import multiprocessing
 import pygame
 import Queue
+import new
+
 
 import serge.engine
 
-def getSurfaceProcessingPipeline(target, skip_to_last=False):
+def getSurfaceProcessingPipeline(target, start=True):
     """Return a pair of queues to implement a surface processing pipeline
     
     An input and output queue are returned. The queues are passed a tuple of items
@@ -14,9 +16,6 @@ def getSurfaceProcessingPipeline(target, skip_to_last=False):
     
     The function must also return a tuple, the first of which is assumed to be a surface
     which will be marshalled.
-    
-    If skip_to_last is True then when the process falls behind it will only process
-    the final item in the queue
     
     """
     #
@@ -29,20 +28,7 @@ def getSurfaceProcessingPipeline(target, skip_to_last=False):
             job = qin.get()
             if job is None:
                 break
-            if skip_to_last:
-                while True:
-                    try:
-                        job = qin.get(False)
-                    except Queue.Empty:
-                        #print 'Last job found', qin.qsize()
-                        if qin.qsize() == 0:
-                            break
-                        else:
-                            pass#print 'Hmmm, still a queue there'
-                    else:
-                        pass#print 'Skipped job', qin.qsize()
-                        if job is None:
-                            return
+            #
             surface, args = unmarshallSurface(*job[0]), job[1:]
             #
             # Process it
@@ -56,13 +42,14 @@ def getSurfaceProcessingPipeline(target, skip_to_last=False):
             qout.put_nowait([marshallSurface(new_surface)] + other)
     #
     # Create queues
-    todo = multiprocessing.Queue()
-    result = multiprocessing.Queue()
+    todo = SkippableQueue()
+    result = SkippableQueue()
     #
     # Create the worker and start it up
     worker = multiprocessing.Process(target=pipelineProcessor, args=(todo, result))
     worker.daemon = True
-    worker.start()
+    if start:
+        worker.start()
     #
     # Make sure we go away
     def stoppingNow(obj, arg):
@@ -84,5 +71,28 @@ def unmarshallSurface(width, height, fmt, string):
     """Return a surface returned from another process"""
     return pygame.image.fromstring(string, (width, height), fmt)
     
-    
-    
+
+
+def SkippableQueue():
+    """Return A queue where only one item is retained"""
+    def replace(self, job):
+        """Replace all items in the queue with this one"""
+        print 'in replace'
+        #
+        # Drain queue
+        while not self.empty():
+            try:
+                _ = self.get_nowait()
+            except Queue.Empty:
+                pass
+            else:
+                print 'dropped job'
+        #
+        # Put item
+        self.put(job)
+    #
+    # Get a queue and then add a method to it
+    queue = multiprocessing.Queue()
+    queue.replace = new.instancemethod(replace, queue, queue.__class__)
+    #
+    return queue
