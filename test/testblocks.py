@@ -127,7 +127,7 @@ class TestVisualBlocks(unittest.TestCase, VisualTester):
         s.renderTo(0, self.r.getSurface(), (50, 60))
         self.save(self.r, 1)
         self.checkRect(self.r.surface, (255, 0, 0, 255), 60, 80, 20, 40, 'block')
-        self.assertEqual((0, 255, 0, 255), self.r.surface.get_at((59, 79)))
+        self.assertEqual((0, 255, 0, 255), self.r.surface.get_at((59, 78)))
         
     def testCircleWithText(self):
         """testCircleWithText: a circular block with text"""
@@ -135,7 +135,7 @@ class TestVisualBlocks(unittest.TestCase, VisualTester):
         s.renderTo(0, self.r.getSurface(), (10, 20))
         self.save(self.r, 1)
         self.checkCircle(self.r.surface, (255, 0, 0, 255), 10, 20, 40, 'block')
-        self.assertEqual((0, 255, 0, 255), self.r.surface.get_at((50, 59)))
+        self.assertEqual((0, 255, 0, 255), self.r.surface.get_at((50, 58)))
         
     def testSpriteWithText(self):
         """testSpriteWithText: a sprite with some text"""
@@ -144,7 +144,7 @@ class TestVisualBlocks(unittest.TestCase, VisualTester):
         s.renderTo(0, self.r.getSurface(), (50, 60))
         self.save(self.r, 1)
         self.checkRect(self.r.surface, (0, 255, 0, 255), 75, 85, 50, 50, 'block')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
 
     def testSpriteWithTextIsDifferentSprite(self):
         """testSpriteWithTextIsDifferentSprite: when using sprites each instance should be a new copy"""
@@ -166,36 +166,36 @@ class TestVisualBlocks(unittest.TestCase, VisualTester):
         b.renderTo(0, self.r.getSurface(), (50, 60))
         #
         self.checkRect(self.r.surface, (0, 255, 0, 255), 75, 85, 50, 50, 'default')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
         #
         b.setCell(0)
         b.renderTo(0, self.r.getSurface(), (50, 60))
         self.checkRect(self.r.surface, (0, 255, 0, 255), 75, 85, 50, 50, 'cell 0')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
         #
         b.setCell(2)
         b.renderTo(0, self.r.getSurface(), (50, 60))
         self.checkRect(self.r.surface, (0, 0, 255, 255), 75, 85, 50, 50, 'cell 2')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
         # Off should be cell 1
         # On should be cell 0
         b.setOn()
         b.renderTo(0, self.r.getSurface(), (50, 60))
         self.checkRect(self.r.surface, (0, 255, 0, 255), 75, 85, 50, 50, 'on')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
         b.setOff()
         b.renderTo(0, self.r.getSurface(), (50, 60))
         self.checkRect(self.r.surface, (255, 0, 0, 255), 75, 85, 50, 50, 'off')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
         # Can toggle
         b.toggle()
         b.renderTo(0, self.r.getSurface(), (50, 60))
         self.checkRect(self.r.surface, (0, 255, 0, 255), 75, 85, 50, 50, 'toggle 1')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
         b.toggle()
         b.renderTo(0, self.r.getSurface(), (50, 60))
         self.checkRect(self.r.surface, (255, 0, 0, 255), 75, 85, 50, 50, 'toggle 2')
-        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 84)))
+        self.assertEqual((255, 0, 0, 255), self.r.surface.get_at((74, 83)))
         
     def testToggleFailsWithSingleCellSprite(self):
         """testToggleFailsWithSingleCellSprite: should fail if try to create a toggle from a single cell sprite"""

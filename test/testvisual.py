@@ -547,7 +547,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         a.renderTo(r, 100)
         r.render()
         self.save(r, 1)
-        self.assertEqual((0,126,0,255), r.getSurface().get_at((49, 59)))
+        self.assertEqual((0,39,0,255), r.getSurface().get_at((49, 59)))
         self.assertEqual((0,0,0,255), r.getSurface().get_at((60,56)))
         #
         s.setAlpha(1.0)
@@ -555,7 +555,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         a.renderTo(r, 100)
         r.render()
         self.save(r, 1)
-        self.assertEqual((0,255,0,255), r.getSurface().get_at((49, 59)))
+        self.assertEqual((0,255,0,255), r.getSurface().get_at((49, 58)))
         self.assertEqual((0,0,0,255), r.getSurface().get_at((60,56)))
         
     
@@ -928,7 +928,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         a.renderTo(r, 100)
         r.render()
         self.save(r, 1)
-        self.assertEqual((0,255,0,255), r.getSurface().get_at((49, 59)))
+        self.assertEqual((0,255,0,255), r.getSurface().get_at((49, 58)))
         self.assertEqual((0,0,0,255), r.getSurface().get_at((60,56)))
 
     def testCanRenderTextLeftJustified(self):
@@ -945,7 +945,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         r.render()
         self.save(r, 1)
         self.assertEqual((0,0,0,255), r.getSurface().get_at((49, 59)))
-        self.assertEqual((0,255,0,255), r.getSurface().get_at((65, 65)))
+        self.assertEqual((0,255,0,255), r.getSurface().get_at((65, 66)))
         self.assertEqual(60, a.x)
         self.assertEqual(60, a.y)
         #
@@ -955,7 +955,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         a.renderTo(r, 100)
         r.render()
         self.save(r, 2)
-        self.assertEqual((0,255,0,255), r.getSurface().get_at((49, 59)))
+        self.assertEqual((0,255,0,255), r.getSurface().get_at((48, 58)))
 
     def testCanCheckRect(self):
         """testCanCheckRect: should be able to check the rect"""
@@ -1003,7 +1003,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         a.renderTo(r, 100)
         r.render()
         self.save(r, 3)
-        self.assertEqual((0,255,0,255), r.getSurface().get_at((60, 56)))
+        self.assertEqual((0,255,0,255), r.getSurface().get_at((60, 58)))
 
     def testCanScaleText(self):
         """testCanScaleText: should be able to scale"""
@@ -1032,10 +1032,10 @@ class TestVisual(unittest.TestCase, VisualTester):
         a.renderTo(r, 100)
         r.render()
         self.save(r, 1)
-        self.assertEqual((0,255,0,255), r.getSurface().get_at((44, 55)))
-        self.assertEqual((0,0,0,255), r.getSurface().get_at((47, 55)))
-        self.assertEqual((0,255,0,255), r.getSurface().get_at((46, 68)))
-        self.assertEqual((0,0,0,255), r.getSurface().get_at((50, 66)))
+        self.assertEqual((0,255,0,255), r.getSurface().get_at((44, 50)))
+        self.assertEqual((0,0,0,255), r.getSurface().get_at((48, 57)))
+        self.assertEqual((0,255,0,255), r.getSurface().get_at((45, 63)))
+        self.assertEqual((0,0,0,255), r.getSurface().get_at((51, 72)))
 
     def testCanHandleEmptyText(self):
         """testCanHandleEmptyText: should be able to handle empty text"""
