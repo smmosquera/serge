@@ -4,6 +4,8 @@ import multiprocessing
 import pygame
 import Queue
 
+import serge.engine
+
 def getSurfaceProcessingPipeline(target, skip_to_last=False):
     """Return a pair of queues to implement a surface processing pipeline
     
@@ -32,7 +34,15 @@ def getSurfaceProcessingPipeline(target, skip_to_last=False):
                     try:
                         job = qin.get(False)
                     except Queue.Empty:
-                        break
+                        #print 'Last job found', qin.qsize()
+                        if qin.qsize() == 0:
+                            break
+                        else:
+                            pass#print 'Hmmm, still a queue there'
+                    else:
+                        pass#print 'Skipped job', qin.qsize()
+                        if job is None:
+                            return
             surface, args = unmarshallSurface(*job[0]), job[1:]
             #
             # Process it
@@ -43,7 +53,7 @@ def getSurfaceProcessingPipeline(target, skip_to_last=False):
                 new_surface, other = results, []
             #
             # Package back
-            qout.put([marshallSurface(new_surface)] + other)
+            qout.put_nowait([marshallSurface(new_surface)] + other)
     #
     # Create queues
     todo = multiprocessing.Queue()
@@ -53,6 +63,14 @@ def getSurfaceProcessingPipeline(target, skip_to_last=False):
     worker = multiprocessing.Process(target=pipelineProcessor, args=(todo, result))
     worker.daemon = True
     worker.start()
+    #
+    # Make sure we go away
+    def stoppingNow(obj, arg):
+        """The engine is stopping"""
+        todo.put(None)
+    engine = serge.engine.CurrentEngine()
+    if engine:
+        engine.linkEvent(serge.events.E_BEFORE_STOP, stoppingNow)
     #
     return (todo, result, worker)
 
