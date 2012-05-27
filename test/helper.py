@@ -21,7 +21,11 @@ class VisualTester:
     
     def save(self, r, n):
         """Save the surface"""
-        pygame.image.save(r.getSurface(), os.path.join('test', 'junk', '%d.png' % n))
+        if isinstance(r, pygame.Surface):
+            surface = r
+        else:
+            surface = r.getSurface()
+        pygame.image.save(surface, os.path.join('test', 'junk', '%d.png' % n))
 
     def checkRect(self, surface, colour, cx, cy, w, h, name, accuracy=5, check_alpha=True, black=(0,0,0,255)):
         """Check that a rectangle is in the right place"""
