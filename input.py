@@ -39,6 +39,11 @@ class KeyState(object):
         except IndexError:
             return None
 
+    def setState(self, key, state):
+        """Set the state for a key"""
+        states = list(self.key_states)
+        states[key] = state
+        self.key_states = tuple(states)
 
 
 class Keyboard(common.Loggable):
@@ -78,6 +83,7 @@ class Keyboard(common.Loggable):
         keys = pygame.key.get_pressed()
         self.previous_state = self.current_state.getCopy()
         self.current_state.key_states = keys
+
 
     
 class MouseState(object):

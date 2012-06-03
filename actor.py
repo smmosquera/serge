@@ -88,7 +88,7 @@ class Actor(common.Loggable, geometry.Rectangle, common.EventAware):
             name_part = '%s (%s)' % (self.name, self.tag)
         else:
             name_part = self.tag
-        return '%s [%s] <%s>' % (self.__class__.__name__, name_part, id(self))
+        return '%s [%s] <%s>' % (self.__class__.__name__, name_part, hex(id(self)))
         
     def setSpriteName(self, name):
         """Set the sprite for this actor"""
@@ -255,6 +255,13 @@ class ActorCollection(list):
     def findActorsByTag(self, tag):
         """Return a collection of actors with the given tag"""
         return ActorCollection([actor for actor in self if actor.tag == tag])
+
+    def findActorsByTags(self, tags):
+        """Return a collection of actors with at least one of the tags"""
+        collection = ActorCollection()
+        for tag in tags:
+            collection.extend(self.findActorsByTag(tag))
+        return collection
                   
     def findActorByName(self, name):
         """Return then actor with the given name"""

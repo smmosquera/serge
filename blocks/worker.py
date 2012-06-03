@@ -39,7 +39,7 @@ def getSurfaceProcessingPipeline(target, start=True):
                 new_surface, other = results, []
             #
             # Package back
-            qout.put_nowait([marshallSurface(new_surface)] + other)
+            qout.put_nowait([marshallSurface(new_surface)] + list(other))
     #
     # Create queues
     todo = SkippableQueue()
@@ -77,7 +77,6 @@ def SkippableQueue():
     """Return A queue where only one item is retained"""
     def replace(self, job):
         """Replace all items in the queue with this one"""
-        print 'in replace'
         #
         # Drain queue
         while not self.empty():
@@ -86,7 +85,7 @@ def SkippableQueue():
             except Queue.Empty:
                 pass
             else:
-                print 'dropped job'
+                pass
         #
         # Put item
         self.put(job)

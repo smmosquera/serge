@@ -307,3 +307,20 @@ def getGamePath(*parts):
     """Return a path based on the main game folder"""
     return os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(serge.__file__)), '..', *parts))
     
+    
+def getSimpleSetup(width, height):
+    """Return an engine with a single world, zone and a few layers"""
+    #
+    # Engine
+    e = serge.engine.Engine(width=width, height=height)
+    #
+    # World
+    createWorldsForEngine(e, ['lab'])
+    #
+    # Rendering
+    createVirtualLayersForEngine(e, ['back', 'middle', 'front'])
+    #
+    e.setCurrentWorldByName('lab')
+    #
+    return e    
+    
