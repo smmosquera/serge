@@ -940,6 +940,25 @@ class TestVisual(unittest.TestCase, VisualTester):
         r.render()
         self.save(r, 1)
         self.checkRect(r.getSurface(), (0,255,0,255), 60, 60, 50, 50, 'initial')
+
+    def testSettingSpriteTwiceShouldHaveNoEffect(self):
+        """testSettingSpriteTwiceShouldHaveNoEffect: should bypass changes if set the same name twice"""
+        s = serge.visual.Register.registerItem('green', p('greenrect.png'))
+        s = serge.visual.Register.registerItem('red', p('multi2.png'))
+        a = serge.actor.Actor('a')
+        a.setSpriteName('green')
+        self.assertEqual(0, a.visual.current_cell)
+        #
+        # Change the cell and then reset sprite
+        a.visual.current_cell = 1
+        a.setSpriteName('green')
+        self.assertEqual(1, a.visual.current_cell)
+        #
+        # But should be fine if we change sprite
+        a.visual.current_cell = 1
+        a.setSpriteName('red')
+        self.assertEqual(0, a.visual.current_cell)
+        
                     
     def testFailIfActorSpriteIsMissing(self):
         """testFailIfActorSpriteIsMissing: should throw an execption of the sprite is missing"""
@@ -1153,7 +1172,22 @@ class TestVisual(unittest.TestCase, VisualTester):
         """testUseRegisterdFont: should be able to use a registered font"""
         serge.visual.Fonts.registerItem('main', os.path.join('test', 'BerenikaBold', 'BerenikaBold.ttf'))
         t = serge.visual.Text('test', (255,0,0,255), 'main')        
-             
+    
+    ### bugs ###    
+    
+    def testReverseAnimationBug(self):
+        """testReverseAnimationBug: was a bug where the animation would reverse incorrectly"""
+        serge.visual.Register.registerItem('walking', p('greenrect.png'), 5, 20, running=True, framerate=10, one_direction=True)
+        a = serge.actor.Actor('sprite')
+        a.setSpriteName('walking')
+        s = a.visual
+        self.assertEqual(True, s.one_direction)
+        self.assertEqual(True, s.loop)
+        self.assertEqual(10, s.framerate)
+        self.assertEqual((1, False), s._mapVirtualToRealCell(1))
+        
+        
+      
     
 if __name__ == '__main__':
     unittest.main()

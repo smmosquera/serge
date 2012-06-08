@@ -31,7 +31,7 @@ class Store(registry.GeneralStore):
         #
         # Watch for special case h = -1 ... this is a multi cell
         if h == -1:
-            return self.registerFromFiles(name, path, w, framerate, running, rectangular, angle, zoom, loop)
+            return self.registerFromFiles(name, path, w, framerate, running, rectangular, angle, zoom, loop, one_direction)
         #
         # Reality heighteck
         if zoom <= 0.0:
@@ -326,7 +326,7 @@ class Sprite(Drawing):
     def getCopy(self):
         """Return a copy of this sprite"""
         new = self.__class__()
-        new.setImage(self.raw_image, (self.width, self.height), self.framerate, self.running, self.loop)
+        new.setImage(self.raw_image, (self.width, self.height), self.framerate, self.running, self.loop, self.one_direction)
         return new
 
     def setAlpha(self, alpha):
@@ -336,7 +336,7 @@ class Sprite(Drawing):
             self._setAlphaForSurface(cell, alpha)
         self._alpha = alpha
 
-    def setImage(self, image, (width, height), framerate=0, running=False, loop=True):
+    def setImage(self, image, (width, height), framerate=0, running=False, loop=True, one_direction=False):
         """Set the image of this sprite"""
         #
         # Store cells of the image for speed - use of the cache is determined by the
@@ -354,6 +354,7 @@ class Sprite(Drawing):
         self.frame_time = 0 if framerate == 0 else 1000.0/framerate
         self.running = running
         self.loop = loop
+        self.one_direction = one_direction
         self.last_time = 0
         self.direction = 1
         self.zoom = 1.0
@@ -512,7 +513,7 @@ class Sprite(Drawing):
                 # One direction, going past the ends maps back to the begining. We hit the end if we have an odd number
                 # of multiples of the number of cells
                 rn = n % nc
-                return rn, ((rn // nc) % 2 == 0)
+                return rn, ((n // nc) % 2 == 1)
             else:
                 #
                 # Going in both directions, map onto twice the cell space (0 reflects back so

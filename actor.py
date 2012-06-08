@@ -92,8 +92,9 @@ class Actor(common.Loggable, geometry.Rectangle, common.EventAware):
         
     def setSpriteName(self, name):
         """Set the sprite for this actor"""
-        self.visual = visual.Register.getItem(name).getCopy()
-        self.sprite = name
+        if name != self.sprite:
+            self.visual = visual.Register.getItem(name).getCopy()
+            self.sprite = name
         
     @property
     def visual(self): return self._visual

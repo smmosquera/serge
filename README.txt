@@ -73,5 +73,5 @@ What's New
     Implemented a block to help with fractal lines and shapes
     Implemented a block to help with running time intensive operations asynchronously 
     The number of physics steps used by pymunk can now be configured
-    
+    Fixed issue with animated sprites not advancing properly if the framerate of the animation was high
     
