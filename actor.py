@@ -121,14 +121,6 @@ class Actor(common.Loggable, geometry.Rectangle, common.EventAware):
         """Return our sprite"""
         return self.sprite
         
-    def setAsText(self, text_object):
-        """Set some text as our visual"""
-        self.visual = text_object
-
-    def setText(self, text):
-        """Set the actual text"""
-        self._visual.setText(text)
-        
     def setLayerName(self, name):
         """Set the layer that we render to"""
         self.layer = name

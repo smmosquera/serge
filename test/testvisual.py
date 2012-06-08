@@ -596,7 +596,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         s = serge.visual.Text('Hello', (0,255,0))
         s.setAlpha(0.5)
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         a.setLayerName('main')
         a.moveTo(60, 60)
         r = serge.render.Renderer()
@@ -992,11 +992,16 @@ class TestVisual(unittest.TestCase, VisualTester):
         
     ### Text ###
     
+    def _setAsText(self, a, s):
+        """Set an actor as some text"""
+        # This is a legacy method that was removed (actor.setAsText)
+        a.visual = s
+        
     def testCanRenderText(self):
         """testCanRenderText: should be able to render text"""
         s = serge.visual.Text('Hello', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         a.setLayerName('main')
         a.moveTo(60, 60)
         r = serge.render.Renderer()
@@ -1011,7 +1016,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         """testCanRenderText: should be able to render text left justified"""
         s = serge.visual.Text('Hello', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         a.setLayerName('main')
         a.moveTo(60, 60)
         a.visual.setJustify('left')
@@ -1048,14 +1053,14 @@ class TestVisual(unittest.TestCase, VisualTester):
         """testFailWithInvalidJustify: should fail with invalid justification"""
         s = serge.visual.Text('Hello', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         self.assertRaises(serge.visual.InvalidJustification, a.visual.setJustify, 'leftxxx')
             
     def testCanSetFontSize(self):
         """testCanSetFontSize: should be able to set the font size"""
         s = serge.visual.Text('Hello', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         s.setFontSize(24)
         a.setLayerName('main')
         a.moveTo(60, 60)
@@ -1070,7 +1075,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         """testCanRotate: should be able to rotate"""
         s = serge.visual.Text('Hello', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         a.setLayerName('main')
         s.setAngle(90)
         a.moveTo(60, 60)
@@ -1085,7 +1090,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         """testCanScaleText: should be able to scale"""
         s = serge.visual.Text('Hello', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         a.setLayerName('main')
         s.scaleBy(2)
         a.moveTo(60, 60)
@@ -1100,7 +1105,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         """testTextCanHaveMultipleLines: should be able to use text with multiple lines"""
         s = serge.visual.Text('Hello\nThere', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         a.setLayerName('main')
         a.moveTo(60, 60)
         r = serge.render.Renderer()
@@ -1117,7 +1122,7 @@ class TestVisual(unittest.TestCase, VisualTester):
         """testCanHandleEmptyText: should be able to handle empty text"""
         s = serge.visual.Text('', (0,255,0))
         a = serge.actor.Actor('greet')
-        a.setAsText(s)
+        self._setAsText(a, s)
         a.setLayerName('main')
         a.moveTo(60, 60)
         r = serge.render.Renderer()
