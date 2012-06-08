@@ -464,29 +464,71 @@ class Sprite(Drawing):
             self.last_time += milliseconds
             #
             # Are we moving on to another frame
-            if self.last_time >= self.frame_time:
-                self.last_time -= self.frame_time
-                self.current_cell += self.direction
+            move_frames, remainder = divmod(self.last_time, self.frame_time)
+            nframes = len(self.cells)
+            #
+            # Are we moving at all?
+            if move_frames >= 1.0:
+                self.last_time = remainder
                 #
-                # Hit the begining?
-                if self.current_cell <= 0:
-                    self.current_cell = 0
-                    self.direction = 1
+                # Move on in cells
+                new_virtual_cell = self.current_cell + self.direction*int(move_frames)
+                #
+                # Map back to the real space
+                self.current_cell, hit_end = self._mapVirtualToRealCell(new_virtual_cell)
+                #
+                # Watch for hitting the end
+                if hit_end:
                     if not self.loop:
                         self.running = False
-                #
-                # Hit the end?
-                elif self.current_cell >= len(self.cells)-1:
-                    if not self.loop:
-                        self.running = False
-                    elif self.one_direction:
-                        self.current_cell = 0
                     else:
-                        self.current_cell = len(self.cells)-1
-                        self.direction = -1       
+                        self.direction *= -1
         #
         # Draw to the surface
         surface.blit(self.cells[self.current_cell], (x, y))
+
+    def _mapVirtualToRealCell(self, n):
+        """Map a virtual cell number to a real one
+        
+        Returns real_cell, hit_end
+        
+        """
+        nc = len(self.cells)
+        hit_end = False
+        if not self.loop:
+            #
+            # No looping - over the ends moves to the end
+            if n <= 0:
+                return 0, True
+            elif n >= nc-1:
+                return nc-1, True
+            else:
+                return n, False
+        else:
+            # 
+            # Looping
+            if self.one_direction:
+                #
+                # One direction, going past the ends maps back to the begining. We hit the end if we have an odd number
+                # of multiples of the number of cells
+                rn = n % nc
+                return rn, ((rn // nc) % 2 == 0)
+            else:
+                #
+                # Going in both directions, map onto twice the cell space (0 reflects back so
+                # use an absolute). We hit the end if we have an odd number
+                # of multiples of the number of cells
+                rn = n % (2*(nc-1))
+                if rn < 0:
+                    rn = abs(rn)
+                    hit_end = ((rn // nc) % 2 == 0)
+                #
+                # Watch for going beyond the end. 
+                if rn >= nc:
+                    return 2*nc-rn-2, True
+                else:
+                    return rn, hit_end
+                
 
     def resetAnimation(self, running):
         """Reset the animation to the begining"""

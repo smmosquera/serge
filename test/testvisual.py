@@ -512,10 +512,42 @@ class TestVisual(unittest.TestCase, VisualTester):
         # green
         s.renderTo(0, r.getSurface(), (25,25))
         self.checkRect(r.getSurface(), (0,255,0,255), 50, 50, 50, 50, 'green')
-        # Skip on 5 seconds - should be back to the begining
+        # Skip on 4 seconds - should be back to the begining
         for idx in range(4):
             s.renderTo(1000, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (0,255,0,255), 50, 50, 50, 50, 'green')
+
+    def testAnimatedSpriteCanMoveMoreThanOneFrame(self):
+        """testAnimatedSpriteCanMoveMoreThanOneFrame: an animated sprite can move forward more than one frame per update"""
+        r = serge.render.Renderer()
+        s = serge.visual.Register.registerItem('all', p('allrect.png'), 4, 1, 1, True, one_direction=False) # four cells
+        #
+        # First with the normal multi-direction (goes forward and then back)
+        # green
+        s.renderTo(0, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (0,255,0,255), 50, 50, 50, 50, 'green')
+        # Skip on 2 seconds - should be on blue
+        s.renderTo(2000, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (1, 1, 255, 255), 50, 50, 50, 50, 'blue')
+
+    def testAnimatedSpriteCanMoveManyFrames(self):
+        """testAnimatedSpriteCanMoveManyFrames: an animated sprite can move many frames per update"""
+        r = serge.render.Renderer()
+        s = serge.visual.Register.registerItem('all', p('allrect.png'), 4, 1, 1, True, one_direction=False) # four cells
+        #
+        # First with the normal multi-direction (goes forward and then back)
+        # green
+        s.renderTo(0, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (0,255,0,255), 50, 50, 50, 50, 'green')
+        # Skip on 10 seconds - should be going backwards 
+        s.renderTo(10000, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (1, 1, 255, 255), 50, 50, 50, 50, 'blue')
+        # One more should take us to red
+        s.renderTo(1000, r.getSurface(), (25,25))
         self.checkRect(r.getSurface(), (255,1, 0,255), 50, 50, 50, 50, 'red')
+        # 9 more should take us to all the way back to blue
+        s.renderTo(9000, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (1, 1, 255, 255), 50, 50, 50, 50, 'blue')
         
     def testCopyHasLoop(self):
         """testCopyHasLoop: bug when a copy of an item doesn't have a loop attribute"""
