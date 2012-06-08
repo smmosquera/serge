@@ -10,7 +10,8 @@ pymunk = common.pymunk
 class DuplicateActor(Exception): """An actor was already in the zone"""
 class ActorNotFound(Exception): """Could not find the actor in the zone"""
 
-
+# Use this to configure the Physics stepsize
+PHYSICS_ITERATIONS = 10
 
 class Zone(geometry.Rectangle, common.Loggable):
     """A zone
@@ -142,7 +143,7 @@ class Zone(geometry.Rectangle, common.Loggable):
         #
         # Create a context for the physics
         self.log.debug('Initializing physics engine')
-        self.space = pymunk.Space()
+        self.space = pymunk.Space(PHYSICS_ITERATIONS)
         self.space.add_collision_handler(2, 2, self._checkCollision, None, None, None)
         #
         # List of physics objects that we need to update
