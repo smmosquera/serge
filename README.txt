@@ -65,4 +65,13 @@ What's New
 0.3.4
     Added duplicateItem method to registry to allow creation of aliased items
     Implemented a dragndrop block to help with drag and drop operations
+    Added a finite state machine block
+    forEach iteration can now work with setting attributes as well as method calls
+    Added a spring towards point behaviour
+    Added a behaviour sequence to control behaviours that run in sequences
+    Generalized the tiled block to allow it to be used for general tile maps
+    Implemented a block to help with fractal lines and shapes
+    Implemented a block to help with running time intensive operations asynchronously 
+    The number of physics steps used by pymunk can now be configured
+    
     
