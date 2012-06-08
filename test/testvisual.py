@@ -491,6 +491,31 @@ class TestVisual(unittest.TestCase, VisualTester):
         self.checkRect(r.getSurface(), (255,1, 0,255), 50, 50, 50, 50, 'red')
         s.renderTo(500, r.getSurface(), (25,25))
         self.checkRect(r.getSurface(), (255,1, 0,255), 50, 50, 50, 50, 'red')
+
+    def testCanHaveAnimatedSpriteThatOnlyGoesOneDirection(self):
+        """testCanHaveAnimatedSpriteThatOnlyGoesOneDirection: an animated sprite can animate in one direction only"""
+        r = serge.render.Renderer()
+        s = serge.visual.Register.registerItem('all', p('allrect.png'), 4, 1, 1, True, one_direction=False) # four cells
+        #
+        # First with the normal multi-direction (goes forward and then back)
+        # green
+        s.renderTo(0, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (0,255,0,255), 50, 50, 50, 50, 'green')
+        # Skip on 5 seconds - should be going backwards
+        for idx in range(4):
+            s.renderTo(1000, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (1, 1, 255, 255), 50, 50, 50, 50, 'blue')
+        #
+        # Now with only one direction
+        s = serge.visual.Register.registerItem('all1', p('allrect.png'), 4, 1, 1, True, one_direction=True) # four cells
+        #
+        # green
+        s.renderTo(0, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (0,255,0,255), 50, 50, 50, 50, 'green')
+        # Skip on 5 seconds - should be back to the begining
+        for idx in range(4):
+            s.renderTo(1000, r.getSurface(), (25,25))
+        self.checkRect(r.getSurface(), (255,1, 0,255), 50, 50, 50, 50, 'red')
         
     def testCopyHasLoop(self):
         """testCopyHasLoop: bug when a copy of an item doesn't have a loop attribute"""

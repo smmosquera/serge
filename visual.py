@@ -25,7 +25,8 @@ log = common.getLogger('Visual')
 class Store(registry.GeneralStore):
     """Stores sprites"""
     
-    def _registerItem(self, name, path, w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True):
+    def _registerItem(self, name, path, w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True,
+            one_direction=False):
         """Register a sprite"""
         #
         # Watch for special case h = -1 ... this is a multi cell
@@ -46,15 +47,15 @@ class Store(registry.GeneralStore):
             except Exception, err:
                 raise BadSprite('Failed to load sprite from "%s": %s' % (path, err))
             #
-            s = self._registerImage(name, image, w, h, framerate, running, rectangular, angle, zoom, loop)
+            s = self._registerImage(name, image, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction)
         else:
             s = self.items[name] = None
         #
         # Remember the settings used to create the sprite
-        self.raw_items.append([name, path, w, h, framerate, running, rectangular, angle, zoom, loop])
+        self.raw_items.append([name, path, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction])
         return s
 
-    def _registerImage(self, name, image, w, h, framerate, running, rectangular, angle, zoom, loop):
+    def _registerImage(self, name, image, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction):
         """Register an image"""
         #
         if zoom != 1.0:
@@ -78,6 +79,7 @@ class Store(registry.GeneralStore):
         s.running = running
         s.rectangular = rectangular   
         s.loop = loop
+        s.one_direction = one_direction
         s.name = name
         #
         self.items[name] = s         
@@ -85,7 +87,7 @@ class Store(registry.GeneralStore):
         return s
     
     def registerFromFiles(self, name, path, number, framerate=0, running=False, rectangular=True, angle=0.0, 
-                            zoom=1.0, start=1, loop=True):
+                            zoom=1.0, start=1, loop=True, one_direction=False):
         """Register a multi cell sprite from a number of files
         
         The path should be a string with a single numerical substitution.
@@ -114,15 +116,15 @@ class Store(registry.GeneralStore):
             canvas.blit(image, ((i-1)*width, 0))
         #
         # Ok, now create as if normal
-        s = self._registerImage(name, canvas, number, 1, framerate, running, rectangular, angle, zoom, loop)
+        s = self._registerImage(name, canvas, number, 1, framerate, running, rectangular, angle, zoom, loop, one_direction)
         #
         # Special case of h = -1 to trigger logic in the registerItem method when we are recovering from
         # a serialize
-        self.raw_items.append([name, path, number, -1, framerate, running, rectangular, angle, zoom, loop])
+        self.raw_items.append([name, path, number, -1, framerate, running, rectangular, angle, zoom, loop, one_direction])
         #
         return s
 
-    def registerMultipleItems(self, names, path, w, h=1, rectangular=True, angle=0.0, zoom=1.0):
+    def registerMultipleItems(self, names, path, w, h=1, rectangular=True, angle=0.0, zoom=1.0, one_direction=False):
         """Register a number of sprites from a single image
         
         The image must be a horizontal row of sprites and you must provide
@@ -143,17 +145,16 @@ class Store(registry.GeneralStore):
         #
         # Now get the individual images out
         for idx, name in enumerate(names):
-            self._registerImage(name, temp.cells[idx], 1, 1, 0, False, rectangular, angle, zoom, False)
-        #
+            self._registerImage(name, temp.cells[idx], 1, 1, 0, False, rectangular, angle, zoom, False, one_direction)
         # Clean up
         self.removeItem('__TEMP__')
     
-    def registerItemsFromPattern(self, pattern, prefix='', w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True):
+    def registerItemsFromPattern(self, pattern, prefix='', w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True, one_direction=False):
         """Register all items matching a certain regular expression"""
         items = [item for item in os.listdir(self._resolveFilename('')) if re.match(pattern, item)]
         for item in items:
             self.registerItem('%s%s' % (prefix, os.path.splitext(item)[0]), 
-                item, w, h, framerate, running, rectangular, angle, zoom, loop)
+                item, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction)
         
          
 Register = Store() # Legacy name
@@ -461,19 +462,28 @@ class Sprite(Drawing):
         # Update current frame
         if self.framerate and self.running:
             self.last_time += milliseconds
+            #
+            # Are we moving on to another frame
             if self.last_time >= self.frame_time:
                 self.last_time -= self.frame_time
                 self.current_cell += self.direction
+                #
+                # Hit the begining?
                 if self.current_cell <= 0:
                     self.current_cell = 0
                     self.direction = 1
                     if not self.loop:
                         self.running = False
+                #
+                # Hit the end?
                 elif self.current_cell >= len(self.cells)-1:
-                    self.current_cell = len(self.cells)-1
-                    self.direction = -1       
                     if not self.loop:
                         self.running = False
+                    elif self.one_direction:
+                        self.current_cell = 0
+                    else:
+                        self.current_cell = len(self.cells)-1
+                        self.direction = -1       
         #
         # Draw to the surface
         surface.blit(self.cells[self.current_cell], (x, y))
