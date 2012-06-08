@@ -812,6 +812,27 @@ class TestVisual(unittest.TestCase, VisualTester):
         self.assertEqual(r.getSurface().get_at((65, 65)), (0,255,0,255), 'back green')
         self.assertEqual(r.getSurface().get_at((105,65)), (255,0,0,255), 'back red')
 
+    def testCanSetHorizontalFlip(self):
+        """testCanSetHorizontalFlip: should be able to set the horizontal flip"""
+        r = serge.render.Renderer()
+        s = serge.visual.Register.registerItem('multi', p('multi.png'))
+        s.renderTo(0, r.getSurface(), (60, 60))
+        # initial
+        self.assertEqual(r.getSurface().get_at((65, 65)), (0,255,0,255), 'initial green')
+        self.assertEqual(r.getSurface().get_at((105,65)), (255,0,0,255), 'initial red')
+        # flip
+        s.setHorizontalFlip(True)
+        r.clearSurface()
+        s.renderTo(0, r.getSurface(), (60, 60))
+        self.assertEqual(r.getSurface().get_at((105, 65)), (0,255,0,255), 'flipped green')
+        self.assertEqual(r.getSurface().get_at((65,65)), (255,0,0,255), 'flipped red')
+        # rotate back
+        s.setHorizontalFlip(False)
+        r.clearSurface()
+        s.renderTo(0, r.getSurface(), (60, 60))
+        self.assertEqual(r.getSurface().get_at((65, 65)), (0,255,0,255), 'back green')
+        self.assertEqual(r.getSurface().get_at((105,65)), (255,0,0,255), 'back red')
+        
     def testCanFlipVertical(self):
         """testCanFlipVertical: should be able to flip the object vertically"""
         r = serge.render.Renderer()
@@ -828,6 +849,27 @@ class TestVisual(unittest.TestCase, VisualTester):
         self.assertEqual(r.getSurface().get_at((65,65)), (0,0,255,255), 'flipped blue')
         # rotate back
         s.flipVertical()
+        r.clearSurface()
+        s.renderTo(0, r.getSurface(), (60, 60))
+        self.assertEqual(r.getSurface().get_at((65, 65)), (0,255,0,255), 'back green')
+        self.assertEqual(r.getSurface().get_at((65, 105)), (0,0,255,255), 'back blue')
+
+    def testCanSetVerticalFlip(self):
+        """testCanSetVerticalFlip: should be able to set the vertical flip"""
+        r = serge.render.Renderer()
+        s = serge.visual.Register.registerItem('multi', p('multi.png'))
+        s.renderTo(0, r.getSurface(), (60, 60))
+        # initial
+        self.assertEqual(r.getSurface().get_at((65, 65)), (0,255,0,255), 'initial green')
+        self.assertEqual(r.getSurface().get_at((65,105)), (0,0,255,255), 'initial blue')
+        # flip
+        s.setVerticalFlip(True)
+        r.clearSurface()
+        s.renderTo(0, r.getSurface(), (60, 60))
+        self.assertEqual(r.getSurface().get_at((65, 105)), (0,255,0,255), 'flipped green')
+        self.assertEqual(r.getSurface().get_at((65,65)), (0,0,255,255), 'flipped blue')
+        # rotate back
+        s.setVerticalFlip(False)
         r.clearSurface()
         s.renderTo(0, r.getSurface(), (60, 60))
         self.assertEqual(r.getSurface().get_at((65, 65)), (0,255,0,255), 'back green')

@@ -197,11 +197,21 @@ class Drawing(object):
     def flipHorizontal(self):
         """Flip the drawing horizontally"""
         raise NotImplementedError('flipHorizontal not implemented on %s' % self)
-        
+    
+    def setHorizontalFlip(self, flip):
+        """Set the horizontal flip state"""
+        if self.horizontal_flip != flip:
+            self.flipHorizontal()
+            
     def flipVertical(self):
         """Flip the drawing vertically"""
         raise NotImplementedError('flipVertical not implemented on %s' % self)
-    
+
+    def setVerticalFlip(self, flip):
+        """Set the vertical flip state"""
+        if self.vertical_flip != flip:
+            self.flipVertical()
+
     ### Rendering ###
         
     def renderTo(self, milliseconds, surface, (x, y)):
