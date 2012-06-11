@@ -272,6 +272,8 @@ class Mouse(object):
             actors_camera = set([a for a in world.findActorsAt(x, y) if not r.getLayer(a.layer).static])
             actors_static = set([a for a in world.findActorsAt(sx, sy) if r.getLayer(a.layer).static])
             #
-            self._actors_under_mouse = actor.ActorCollection(actors_camera.union(actors_static))
+            self._actors_under_mouse = actor.ActorCollection(list(actors_static) + list(actors_camera))
         #
         return self._actors_under_mouse
+        
+        

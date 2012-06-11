@@ -146,14 +146,24 @@ class EventAware(object):
             raise EventNotFound('The event "%s" was not registered' % name)
         #
         # Try to pass this off to a handler
+        inhibits = set()
         try:
             links = self._event_handlers[name]
         except KeyError:
-            self.handleEvent(event)
+            new_inhibits = self.handleEvent(event)
+            # Watch for new events to inhibit
+            if new_inhibits:
+                inhibits.add(new_inhibits)
         else:
+            #
+            # Process all the handler functions
             for callback, arg in links:
-                callback(obj, arg)
-            
+                new_inhibits = callback(obj, arg)
+                # Watch for new events to inhibit
+                if new_inhibits:
+                    inhibits.add(new_inhibits)
+        return inhibits
+        
     def handleEvent(self, event):
         """Handle an incoming event"""
         pass

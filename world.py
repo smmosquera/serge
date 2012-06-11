@@ -269,9 +269,14 @@ class World(common.Loggable, serialize.Serializable, common.EventAware):
     
     def processEvents(self, events):
         """Handle the events"""
-        for name_source, actor in events:
-            if actor.active:
-                actor.processEvent(name_source)
+        inhibited = set()
+        for (event, obj), actor in events:
+            if actor.active and not event in inhibited:
+                # Process the event
+                new_inhibits = actor.processEvent((event, obj))
+                # Record if we need to inhibit further events of a certain type
+                if new_inhibits:
+                    inhibited.update(new_inhibits)
 
     def activateWorld(self):
         """Called when the world is set as the current world"""

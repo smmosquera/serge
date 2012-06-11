@@ -36,6 +36,7 @@ class TestWorlds(unittest.TestCase):
         self.engine = serge.engine.Engine()
         self.engine.getRenderer().addLayer(serge.render.Layer('one', 0))
         self.engine.getRenderer().addLayer(serge.render.Layer('two', 0))
+
         
     def tearDown(self):
         """Tear down the tests"""
@@ -667,21 +668,58 @@ class TestWorlds(unittest.TestCase):
         engine.addWorld(self.w)
         engine.setCurrentWorld(self.w)
         engine._mouse = mouse
-        import pdb; pdb.set_trace()
         engine.processEvents()
         #
         # Should fire twice
         self.assertEqual(11, test)
         #
-        # Now with consuming
+        # Now with consuming - only one of the events should work
         consume = True
+        test = 0
         engine.processEvents()
-        self.assertEqual(21, test)
+        self.assertTrue(test in (1, 10))
         
-    def testCanSpecifyHandlingOrder(self):
-        """testCanSpecifyHandlingOrder: should be able to specify an event handler as important"""
-        raise NotImplementedError
-        
+    def testStaticZonedActorsAreHandledFirst(self):
+        """testStaticZonedActorsAreHandledFirst: should be able to specify an event handler as important by putting on static"""
+        # Here is the key to ordering the event listeners
+        self.engine.getRenderer().getLayer('two').setStatic(True)
+        #
+        self.a1.setSpatial(0, 0, 1000, 1000)
+        self.a2.setSpatial(0, 0, 1000, 1000)
+        self.w.addZone(self.z1)
+        self.w.addZone(self.z2)
+        engine = self.engine
+        mouse = serge.input.Mouse(engine)
+        # Fake a click
+        mouse.current_mouse_state.setState(serge.input.M_LEFT, True)
+        mouse.getScreenPos = lambda : (x, y)
+        #
+        self.a1.layer = 'one'
+        self.a2.layer = 'two'
+        x, y = 55, 100
+        #
+        global test, consume
+        test = 0
+        consume = True
+        def doit(obj, x):
+            global test
+            test += x
+            if consume:
+                return serge.events.E_LEFT_MOUSE_DOWN
+            else:
+                return None
+        #
+        # Link events - normally a2 would fire first being the last
+        # registered but since a2 is on a static layer now it will be the first
+        self.a1.linkEvent(serge.events.E_LEFT_MOUSE_DOWN, doit, 10)
+        self.a2.linkEvent(serge.events.E_LEFT_MOUSE_DOWN, doit, 1)
+        #
+        # First non consuming
+        engine.addWorld(self.w)
+        engine.setCurrentWorld(self.w)
+        engine._mouse = mouse
+        engine.processEvents()
+        self.assertEqual(1, test)        
 
 
     ### World Events ###
