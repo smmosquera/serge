@@ -142,7 +142,7 @@ class Zone(geometry.Rectangle, common.Loggable):
             return
         #
         # Create a context for the physics
-        self.log.debug('Initializing physics engine')
+        self.log.debug('Initializing physics engine with %d iterations' % PHYSICS_ITERATIONS)
         self.space = pymunk.Space(PHYSICS_ITERATIONS)
         self.space.add_collision_handler(2, 2, self._checkCollision, None, None, None)
         #

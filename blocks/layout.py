@@ -74,7 +74,13 @@ class Bar(Container):
         self._redoLocations()
         actor.setLayerName(self.getLayerName() if layer_name is None else layer_name)
         return actor
-    
+
+    def addBlanks(self, number):
+        """Add blank entries into the bar"""
+        for i in range(number):
+            a = serge.actor.Actor('blank')
+            self.addActor(a)
+             
 class HorizontalBar(Bar):
     """A horizontal bar of actors"""
     

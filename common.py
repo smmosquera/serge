@@ -16,7 +16,10 @@ NUM_AUDIO_CHANNELS = 32
 # Look for Pymunk
 try:
     import pymunk
-    pymunk.init_pymunk()
+    #
+    # Looks like the following is not needed on pymunk 2.1
+    if hasattr(pymunk, 'init_pymunk'):
+        pymunk.init_pymunk()
     PYMUNK_OK = True
 except ImportError:
     import simplevecs as pymunk

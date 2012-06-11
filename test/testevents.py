@@ -126,7 +126,7 @@ class TestEvents(unittest.TestCase):
         self.assertRaises(serge.common.EventNotFound, self.b.unlinkEvent, E_THrEE, self._callback)
         self.assertRaises(serge.common.EventNotFound, self.b.unlinkEvent, E_FOUR, self._callback)
         
-    
+        
         
 
 

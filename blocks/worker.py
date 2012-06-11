@@ -22,24 +22,30 @@ def getSurfaceProcessingPipeline(target, start=True):
     # The pipeline function
     def pipelineProcessor(qin, qout):
         """Implements the surface processing pipeline"""
-        while True:
-            #
-            # Get the next job
-            job = qin.get()
-            if job is None:
-                break
-            #
-            surface, args = unmarshallSurface(*job[0]), job[1:]
-            #
-            # Process it
-            results = target(surface, *args)
-            if isinstance(results, tuple):
-                new_surface, other = results[0], results[1:]
-            else:
-                new_surface, other = results, []
-            #
-            # Package back
-            qout.put_nowait([marshallSurface(new_surface)] + list(other))
+        try:
+            while True:
+                #
+                # Get the next job
+                job = qin.get()
+                if job is None:
+                    qout.put(None)
+                    break
+                #
+                surface, args = unmarshallSurface(*job[0]), job[1:]
+                #
+                # Process it
+                results = target(surface, *args)
+                if isinstance(results, tuple):
+                    new_surface, other = results[0], results[1:]
+                else:
+                    new_surface, other = results, []
+                #
+                # Package back
+                qout.put_nowait([marshallSurface(new_surface)] + list(other))
+        except Exception, err:
+            print '**Worker failed with %s' % err
+            print '**Stopping now'
+            qout.put(None)
     #
     # Create queues
     todo = SkippableQueue()
@@ -54,7 +60,15 @@ def getSurfaceProcessingPipeline(target, start=True):
     # Make sure we go away
     def stoppingNow(obj, arg):
         """The engine is stopping"""
+        engine.log.info('Cleaning up worker - sent quit signal')
         todo.put(None)
+        engine.log.info('Waiting for worker to finish')
+        while True:
+            answer = result.get()
+            if answer is None:
+                engine.log.info('Worker seems to have finished')
+                break
+    #
     engine = serge.engine.CurrentEngine()
     if engine:
         engine.linkEvent(serge.events.E_BEFORE_STOP, stoppingNow)

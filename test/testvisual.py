@@ -516,7 +516,13 @@ class TestVisual(unittest.TestCase, VisualTester):
         for idx in range(4):
             s.renderTo(1000, r.getSurface(), (25,25))
         self.checkRect(r.getSurface(), (0,255,0,255), 50, 50, 50, 50, 'green')
-
+        #
+        # And continues
+        self.assertEqual(1, s.direction)
+        s.renderTo(1000, r.getSurface(), (25,25))
+        self.assertEqual(1, s.direction)
+        self.checkRect(r.getSurface(), (255,1, 0,255), 50, 50, 50, 50, 'red')
+        
     def testAnimatedSpriteCanMoveMoreThanOneFrame(self):
         """testAnimatedSpriteCanMoveMoreThanOneFrame: an animated sprite can move forward more than one frame per update"""
         r = serge.render.Renderer()

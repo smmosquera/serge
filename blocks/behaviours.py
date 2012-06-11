@@ -105,7 +105,7 @@ class BehaviourManager(serge.actor.Actor):
         if record._getId() in self._behaviours:
             raise DuplicateBehaviour('The behaviour %s,%s was already recorded' % (actor, behaviour))
         nice_name = 'the game' if actor is None else actor.getNiceName()
-        self.log.info('Assigned behaviour %s to %s' % (behaviour, nice_name))
+        self.log.debug('Assigned behaviour %s to %s' % (behaviour, nice_name))
         self._behaviours[record._getId()] = record
         if actor:
             actor.linkEvent(serge.events.E_REMOVED_FROM_WORLD, self._actorRemoved)

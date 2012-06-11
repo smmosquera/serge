@@ -492,7 +492,7 @@ class Sprite(Drawing):
                 if hit_end:
                     if not self.loop:
                         self.running = False
-                    else:
+                    elif not self.one_direction:
                         self.direction *= -1
         #
         # Draw to the surface

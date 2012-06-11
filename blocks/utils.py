@@ -240,6 +240,7 @@ class RecordDesktop(serge.common.Loggable):
         self.log.info('Starting "recordmydesktop"')
         self.child = subprocess.Popen(['recordmydesktop', '--width', width, '--height', height,
             '-x', x, '-y', y, '-o', filename, '--fps', '60'])
+        
         #
         # Hook completion so we can quit
         engine.linkEvent(serge.events.E_AFTER_STOP, self.stop)
@@ -323,4 +324,19 @@ def getSimpleSetup(width, height):
     e.setCurrentWorldByName('lab')
     #
     return e    
+
+def debugMethod(obj, method_name, logger=None, fmt=''):
+    """Create a debug logged method"""
+    def fn(*args, **kw):
+        """Debugged method"""
+        if fmt:
+            logger.debug(fmt % args)
+        else:
+            logger.debug('Debug %s::%s: %s, %s' % (obj.getNiceName(), method_name, args, kw))
+        return method(*args, **kw)
+    #    
+    if logger is None:
+        logger = obj.log
+    method = getattr(obj, method_name)
+    setattr(obj, method_name, fn)
     

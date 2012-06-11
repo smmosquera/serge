@@ -510,8 +510,6 @@ class TestWorlds(unittest.TestCase):
         self.assertEqual(None, self.a1.action)
         self.assertEqual(None, self.a2.action)
         
-    
-        
     def testEngineCanHandleMouseEvents(self):
         """testEngineCanHandleMouseEvents: engine should be able to handle mouse events"""
         self.a1.setSpatial(50, 100, 51, 30)
@@ -633,6 +631,58 @@ class TestWorlds(unittest.TestCase):
         self.assertEqual(2, self.w.activations)
         self.assertEqual(1, self.w.deactivations)
         self.assertEqual(1, self.w2.deactivations)
+
+    def testCanConsumeMouseEvent(self):
+        """testCanConsumeMouseEvent: should be able to consume a mouse event to prevent others seeing it"""
+        self.a1.setSpatial(50, 100, 51, 30)
+        self.a2.setSpatial(50, 100, 51, 30)
+        self.w.addZone(self.z1)
+        self.w.addZone(self.z2)
+        engine = self.engine
+        mouse = serge.input.Mouse(engine)
+        # Fake a click
+        mouse.current_mouse_state.setState(serge.input.M_LEFT, True)
+        mouse.getScreenPos = lambda : (x, y)
+        #
+        self.a1.layer = 'one'
+        self.a2.layer = 'one'
+        x, y = 55, 100
+        #
+        global test, consume
+        test = 0
+        consume = False
+        def doit(obj, x):
+            global test
+            test += x
+            if consume:
+                return serge.events.E_LEFT_MOUSE_DOWN
+            else:
+                return None
+        #
+        # Link events
+        self.a1.linkEvent(serge.events.E_LEFT_MOUSE_DOWN, doit, 10)
+        self.a2.linkEvent(serge.events.E_LEFT_MOUSE_DOWN, doit, 1)
+        #
+        # First non consuming
+        engine.addWorld(self.w)
+        engine.setCurrentWorld(self.w)
+        engine._mouse = mouse
+        import pdb; pdb.set_trace()
+        engine.processEvents()
+        #
+        # Should fire twice
+        self.assertEqual(11, test)
+        #
+        # Now with consuming
+        consume = True
+        engine.processEvents()
+        self.assertEqual(21, test)
+        
+    def testCanSpecifyHandlingOrder(self):
+        """testCanSpecifyHandlingOrder: should be able to specify an event handler as important"""
+        raise NotImplementedError
+        
+
 
     ### World Events ###
     
