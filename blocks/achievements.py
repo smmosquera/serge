@@ -304,7 +304,7 @@ class AchievementsGrid(serge.blocks.actors.ScreenActor):
         self.manager = getManager()
                 
     def addedToWorld(self, world):
-        """Added the grid to the worl"""
+        """Added the grid to the world"""
         super(AchievementsGrid, self).addedToWorld(world)
         G = self.G
         #

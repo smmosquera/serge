@@ -54,7 +54,33 @@ class TestPhysics(unittest.TestCase, VisualTester):
         self.w.removeActor(a)
         self.w.updateWorld(1000.0)
         self.assertAlmostEqual(1.0, a.x)
-        
+    
+    def testRemoveObjectShouldRemoveItemFromSimulation(self):
+        """testRemoveObjectShouldRemoveItemFromSimulation: removing an actor should remove it from the simulation"""
+        a = serge.actor.Actor('test')
+        a.setPhysical(serge.physical.PhysicalConditions(mass=1.0, radius=1.0, velocity=(1.0, 0.0)))
+        a.moveTo(0,0)
+        self.w.addActor(a)
+        self.w.updateWorld(1000.0)
+        #
+        # Get physical bits and bobs
+        p = a.getPhysical()
+        space = p.space
+        body = p.body
+        shape = p.shape
+        #
+        # a's body and shape should be in the space
+        self.assertTrue(body in space.bodies)
+        self.assertTrue(shape in space.shapes)
+        #        
+        # Now remove
+        self.w.removeActor(a)
+        self.w.updateWorld(1000.0)
+        #
+        # And should be gone from the simulation        
+        self.assertTrue(body not in space.bodies)
+        self.assertTrue(shape not in space.shapes)
+       
     def testChangeObjectVelocity(self):
         """testChangeObjectVelocity: should be able to change an objects velocity after it has been added"""
         a = serge.actor.Actor('test')

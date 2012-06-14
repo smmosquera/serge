@@ -141,8 +141,9 @@ class FormattedText(serge.actor.Actor):
 
     def setValue(self, name, value):
         """Set the value"""
-        self.values[name] = value
-        self.updateText()
+        if self.values.get(name, None) != value:
+            self.values[name] = value
+            self.updateText()
             
     def getValue(self, name):
         """Get the values"""
