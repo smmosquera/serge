@@ -71,6 +71,9 @@ E_DRAG_START = 'drag-start'
 E_DRAG_ENDED = 'drag-ended'
 E_DROPPED_ON = 'dropped-on'
 
+# Events related to entering information
+E_ACCEPT_ENTRY = 'accept-entry'
+
 ### The global event broadcasting system ###
 
 

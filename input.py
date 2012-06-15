@@ -79,6 +79,10 @@ class Keyboard(common.Loggable):
                 return True
         return False
 
+    def getClicked(self):
+        """Return a list of the keys that are clicked"""
+        return [key for key in range(len(self.current_state.key_states)) if self.isClicked(key)]
+        
     def update(self, interval):
         keys = pygame.key.get_pressed()
         self.previous_state = self.current_state.getCopy()

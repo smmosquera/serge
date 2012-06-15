@@ -1,10 +1,12 @@
 """Blocks to help with actors"""
 
+import pygame
+
 import serge.actor
 import serge.engine
 import serge.actor
 import serge.events
-
+import serge.blocks.behaviours
 
 class InvalidMenu(Exception): """The menu was not valid"""
 class InvalidMenuItem(Exception): """The menu item was not understood"""
@@ -336,4 +338,83 @@ class FPSDisplay(NumericText):
         super(FPSDisplay, self).updateActor(interval, world)
         self.value = self.engine.getStats().average_frame_rate
         
-        
+ 
+class TextEntryWidget(serge.actor.MountableActor):
+    """Implements a single line text entry widget
+    
+    Support letters and numbers. Delete, backspace and left all delete the last
+    character. Enter triggers an ACCEPT event.
+    
+    """
+    
+    def __init__(self, tag, name, width, height, colour, font_size, font_name='DEFAULT', 
+                    justify='center', background_visual=None, background_layer='background',
+                    show_cursor=False, blink_time=0.5):
+        """Initialise the text entry widget"""
+        super(TextEntryWidget, self).__init__(tag, name)
+        #
+        # The text to display
+        self.text = self.mountActor(StringText(tag, '%s-text' % name, '', colour=colour, font_name=font_name,
+            font_size=font_size, justify=justify), (0, 0))
+        #
+        # Our background
+        if background_visual:
+            self.background = self.mountActor(serge.actor.Actor(tag, '%s-bg' % name), (0, 0))
+            self.background.visual = background_visual
+            self.background.setLayerName(background_layer)
+        #
+        self.show_cursor = show_cursor
+        self.colour = colour
+        self.font_name = font_name
+        self.blink_time = blink_time
+                    
+    def setLayerName(self, layer_name):
+        """Set the layer name"""
+        super(TextEntryWidget, self).setLayerName(layer_name)
+        #
+        self.text.setLayerName(layer_name)
+
+    def addedToWorld(self, world):
+        """Added to the world"""
+        super(TextEntryWidget, self).addedToWorld(world)
+        #
+        self.keyboard = serge.engine.CurrentEngine().getKeyboard() 
+        #
+        # The cursor
+        if self.show_cursor:
+            #
+            # Create the cursor
+            font = self.text.visual.font
+            w, h = font.size('#')
+            self.cursor = serge.blocks.utils.addVisualActorToWorld(world, self.tag, '%s-cursor' % self.name,
+                serge.blocks.visualblocks.Rectangle((w, h), self.colour),
+                layer_name=self.getLayerName())
+            #
+            # And make it blink
+            manager = world.findActorByName('behaviours')
+            manager.assignBehaviour(self.cursor, serge.blocks.behaviours.Blink(
+                self.cursor, self.blink_time), 'blinking')
+        else:
+            self.cursor = None
+                
+
+    def updateActor(self, interval, world):
+        """Update the entry widget"""
+        #
+        # Handle the keystrokes
+        keys = self.keyboard.getClicked()
+        for key in keys:
+            if key in (pygame.K_BACKSPACE, pygame.K_DELETE, pygame.K_LEFT):
+                self.text.value = '' if self.text.value == '' else self.text.value[:-1]
+            elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                self.processEvent((serge.events.E_ACCEPT_ENTRY, self.text.value))
+            else:
+                try:
+                    self.text.value += chr(key)
+                except ValueError:
+                    self.log.debug('Invalid key (%s)' % key)
+        #
+        # Position the cursor if we have one
+        if self.cursor:
+            self.cursor.moveTo(self.text.x + self.text.width/2 + self.cursor.width/2, self.text.y)
+            

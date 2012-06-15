@@ -444,6 +444,23 @@ class FlashFor(Behaviour):
         else:
             self._actor.flashing = True
             self._actor.visible = not self._actor.visible
+
+class Blink(Behaviour):
+    """Blink an actor on the screen"""
+
+    def __init__(self, actor, time):
+        """Initialise the FlashFor"""
+        self._initial_time = time
+        self._time = time
+        self._actor = actor
+
+    def __call__(self, world, actor, interval):
+        """Perform the behaviour"""
+        self._time -= interval/1000.0
+        if self._time <= 0:
+            self._actor.visible = not self._actor.visible
+            self._time = self._initial_time
+
             
 class TwoOptions(Behaviour):
     """A behaviour that chooses between two optional behaviours"""
