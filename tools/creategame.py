@@ -8,19 +8,20 @@ import shutil
 sys.path.append(os.path.abspath('.'))
 import serge
 
-parser = OptionParser()
-parser.add_option("-n", "--name", dest="name", default='game', type="str",
-                  help="name of the game")
-parser.add_option("-l", "--location", dest="location", default=os.curdir, type="str",
-                  help="location to place the game")
-parser.add_option("-f", "--force", dest="force", default=False, action="store_true",
-                  help="overwrite existing folder (all folder contents will be deleted)")
-parser.add_option("-p", "--pymunk", dest="pymunk", default=False, action="store_true",
-                  help="the game requires pymunk")
-parser.add_option("-w", "--width", dest="width", default=800, type="int",
-                  help="width of the screen")
-parser.add_option("-v", "--height", dest="height", default=600, type="int",
-                  help="height of the screen")
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option("-n", "--name", dest="name", default='game', type="str",
+                      help="name of the game")
+    parser.add_option("-l", "--location", dest="location", default=os.curdir, type="str",
+                      help="location to place the game")
+    parser.add_option("-f", "--force", dest="force", default=False, action="store_true",
+                      help="overwrite existing folder (all folder contents will be deleted)")
+    parser.add_option("-p", "--pymunk", dest="pymunk", default=False, action="store_true",
+                      help="the game requires pymunk")
+    parser.add_option("-w", "--width", dest="width", default=800, type="int",
+                      help="width of the screen")
+    parser.add_option("-v", "--height", dest="height", default=600, type="int",
+                      help="height of the screen")
 
 
 def getSergePath():

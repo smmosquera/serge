@@ -12,7 +12,12 @@ class DuplicateActor(Exception): """The actor was already in the world"""
 class DuplicateZone(Exception): """The zone was already in the world"""
 
 class World(common.Loggable, serialize.Serializable, common.EventAware):
-    """The main world object"""
+    """The main world object
+    
+    The :doc:`engine` will control main worlds. Each world has a number
+    of :doc:`zone` which contain :doc:`actor`.
+    
+    """
 
     my_properties = (
         serialize.S('name', '', 'the name of this world'),
@@ -62,6 +67,10 @@ class World(common.Loggable, serialize.Serializable, common.EventAware):
         else:
             self.zones.add(zone)
         self._actors_need_resorting = True
+        
+    def clearZones(self):
+        """Remove all the zones"""
+        self.zones = set()
         
     ### Main ###
                 

@@ -8,23 +8,24 @@ import shutil
 sys.path.append(os.path.abspath('.'))
 import serge
 
-parser = OptionParser()
-parser.add_option("-g", "--name", dest="name", default='game', type="str",
-                  help="name of the game")
-parser.add_option("-n", "--world", dest="world", default='world', type="str",
-                  help="name of the world")
-parser.add_option("-l", "--location", dest="location", default=os.curdir, type="str",
-                  help="location to place the game")
-parser.add_option("-f", "--force", dest="force", default=False, action="store_true",
-                  help="overwrite existing folder (all folder contents will be deleted)")
-parser.add_option("-w", "--width", dest="width", default=32, type="int",
-                  help="width of the level in squares")
-parser.add_option("-v", "--height", dest="height", default=32, type="int",
-                  help="height of the level in squares")
-parser.add_option("-W", "--cellwidth", dest="cellwidth", default=32, type="int",
-                  help="width of the cells in the level in pixels")
-parser.add_option("-V", "--cellheight", dest="cellheight", default=32, type="int",
-                  help="height of the cells in the level in pixels")
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option("-g", "--name", dest="name", default='game', type="str",
+                      help="name of the game")
+    parser.add_option("-n", "--world", dest="world", default='world', type="str",
+                      help="name of the world")
+    parser.add_option("-l", "--location", dest="location", default=os.curdir, type="str",
+                      help="location to place the game")
+    parser.add_option("-f", "--force", dest="force", default=False, action="store_true",
+                      help="overwrite existing folder (all folder contents will be deleted)")
+    parser.add_option("-w", "--width", dest="width", default=32, type="int",
+                      help="width of the level in squares")
+    parser.add_option("-v", "--height", dest="height", default=32, type="int",
+                      help="height of the level in squares")
+    parser.add_option("-W", "--cellwidth", dest="cellwidth", default=32, type="int",
+                      help="width of the cells in the level in pixels")
+    parser.add_option("-V", "--cellheight", dest="cellheight", default=32, type="int",
+                      help="height of the cells in the level in pixels")
 
 
 def getSergePath():
