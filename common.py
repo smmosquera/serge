@@ -90,7 +90,13 @@ def getLogger(name):
 
 
 class Loggable(object):
-    """A class that can log"""
+    """A helper class that adds a logger to a class
+    
+    Each instance of the class will have a *log* attribute and can
+    use this to log output. The `log` attrbute is a logger with the
+    usual *debug*, *warn*, *info*, and *error* methods.
+    
+    """
     
     def addLogger(self):
         """Add a logger"""

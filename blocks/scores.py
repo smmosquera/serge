@@ -17,7 +17,9 @@ class HighScoreTable(serge.serialize.Serializable):
     The table can contain scores in a number of categories. Each
     category is a table with multiple columns. The table can be
     sorted by any one column and can have a limited set of 
-    values"""
+    values
+    
+    """
 
     my_properties = (
         serge.serialize.D('categories', {}, 'the categories in this table'),
