@@ -57,12 +57,15 @@ class Keyboard(common.Loggable):
         self.current_state.key_states = pygame.key.get_pressed()
 
     def isDown(self, key):
+        """Return True if the key is down"""
         return self.current_state.getState(key)
 
     def isUp(self, key):
+        """Return True if the key is up"""
         return not self.current_state.getState(key)
 
     def isClicked(self, key):
+        """Return True if the key has been clicked"""
         return self.previous_state.getState(key) and (not self.current_state.getState(key))
 
     def areAnyDown(self):
@@ -84,6 +87,7 @@ class Keyboard(common.Loggable):
         return [key for key in range(len(self.current_state.key_states)) if self.isClicked(key)]
         
     def update(self, interval):
+        """Update the state of the keyboard"""
         keys = pygame.key.get_pressed()
         self.previous_state = self.current_state.getCopy()
         self.current_state.key_states = keys

@@ -6,8 +6,10 @@ breaking things in future releases.
 """
 
 import sys
+import re
 
 import common
+import serialize
 
 # Occurs when one object collides with another
 E_COLLISION = 'collision'
@@ -94,5 +96,8 @@ def getEventBroadcaster():
     return _broadcaster
 
 
-    
-    
+ALL_EVENTS = serialize.Bag()
+finder = re.compile('E_[A-Z_]+$')
+for name, obj in list(sys.modules[__name__].__dict__.iteritems()):
+    if finder.match(name) and isinstance(obj, str):
+        setattr(ALL_EVENTS, name, obj)

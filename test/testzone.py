@@ -226,7 +226,17 @@ class TestZones(unittest.TestCase):
         self.assertEqual([self.a1.visual], l1.renders)
         self.assertEqual([], l2.renders)
        
-   
+    ### Tag matching zones ###  
+    
+    def testCanHaveAZoneThatChecksForTags(self):
+        """testCanHaveAZoneThatChecksForTags: should be able to match containment to tags"""
+        raise NotImplementedError
+        
+    def testCanHaveAZoneThatChecksForExcludingTags(self):
+        """testCanHaveAZoneThatChecksForExcludingTags: should be able to exclude tags from a zone"""
+        raise NotImplementedError
+        
+       
         
 class TestZone(serge.zone.Zone):
     def __init__(self):

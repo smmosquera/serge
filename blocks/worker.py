@@ -8,6 +8,36 @@ import new
 
 import serge.engine
 
+#
+# The pipeline function
+def pipelineProcessor(qin, qout, target):
+    """Implements the surface processing pipeline"""
+    try:
+        while True:
+            #
+            # Get the next job
+            job = qin.get()
+            if job is None:
+                qout.put(None)
+                break
+            #
+            surface, args = unmarshallSurface(*job[0]), job[1:]
+            #
+            # Process it
+            results = target(surface, *args)
+            if isinstance(results, tuple):
+                new_surface, other = results[0], results[1:]
+            else:
+                new_surface, other = results, []
+            #
+            # Package back
+            qout.put_nowait([marshallSurface(new_surface)] + list(other))
+    except Exception, err:
+        print '**Worker failed with %s' % err
+        print '**Stopping now'
+        qout.put(None)
+        
+        
 def getSurfaceProcessingPipeline(target, start=True):
     """Return a pair of queues to implement a surface processing pipeline
     
@@ -19,40 +49,12 @@ def getSurfaceProcessingPipeline(target, start=True):
     
     """
     #
-    # The pipeline function
-    def pipelineProcessor(qin, qout):
-        """Implements the surface processing pipeline"""
-        try:
-            while True:
-                #
-                # Get the next job
-                job = qin.get()
-                if job is None:
-                    qout.put(None)
-                    break
-                #
-                surface, args = unmarshallSurface(*job[0]), job[1:]
-                #
-                # Process it
-                results = target(surface, *args)
-                if isinstance(results, tuple):
-                    new_surface, other = results[0], results[1:]
-                else:
-                    new_surface, other = results, []
-                #
-                # Package back
-                qout.put_nowait([marshallSurface(new_surface)] + list(other))
-        except Exception, err:
-            print '**Worker failed with %s' % err
-            print '**Stopping now'
-            qout.put(None)
-    #
     # Create queues
     todo = SkippableQueue()
     result = SkippableQueue()
     #
     # Create the worker and start it up
-    worker = multiprocessing.Process(target=pipelineProcessor, args=(todo, result))
+    worker = multiprocessing.Process(target=pipelineProcessor, args=(todo, result, target))
     worker.daemon = True
     if start:
         worker.start()
@@ -93,11 +95,11 @@ def SkippableQueue():
         """Replace all items in the queue with this one"""
         #
         # Drain queue
-        while not self.empty():
+        while True:
             try:
                 _ = self.get_nowait()
             except Queue.Empty:
-                pass
+                break
             else:
                 pass
         #
