@@ -191,7 +191,7 @@ class World(common.Loggable, serialize.Serializable, common.EventAware):
         #
         # Try to put the actor in the right zone
         for z in self.zones:
-            if z.isOverlapping(actor):
+            if z.wouldContain(actor):
                 z.addActor(actor)
                 break
         else:

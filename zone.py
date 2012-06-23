@@ -72,7 +72,17 @@ class Zone(geometry.Rectangle, common.Loggable):
         # Do physics if we need to
         if self._physics_objects:
             self._updatePhysics(interval)
-            
+    
+    def wouldContain(self, actor):
+        """Return True if this zone would contain the actor as it is right now
+        
+        The base Zone implementation uses spatial overlapping as the criteria but you
+        can create custom zones that use other criteria to decide which actors should
+        be in the zone.
+        
+        """
+        return self.isOverlapping(actor)
+    
     def addActor(self, actor):
         """Add an actor to the zone"""
         if actor in self.actors:
@@ -202,5 +212,31 @@ class Zone(geometry.Rectangle, common.Loggable):
     def setGlobalForce(self, force):
         """Set the global force for physics"""
         self.global_force = force
+
+
+
+class TagIncludeZone(Zone):
+    """A zone that includes any actor with a tag chosen from a list"""
+
+    def __init__(self, tag_list):
+        """Initialise the TagIncludeZone"""
+        super(TagIncludeZone, self).__init__()
+        self.tag_list = tag_list
+            
+    def wouldContain(self, actor):
+        """Return True if this actor has the right tag"""
+        return actor.tag in self.tag_list
         
+        
+class TagExcludeZone(Zone):
+    """A zone that excludes any actor with a tag chosen from a list"""
+
+    def __init__(self, tag_list):
+        """Initialise the TagExcludeZone"""
+        super(TagExcludeZone, self).__init__()
+        self.tag_list = tag_list
+            
+    def wouldContain(self, actor):
+        """Return True if this actor doesn't have a tag matching our list"""
+        return actor.tag not in self.tag_list
 

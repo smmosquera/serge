@@ -27,6 +27,9 @@ class TestWorlds(unittest.TestCase):
         self.a2 = TestActor()
         self.a2.tag = 'a'
         self.a2.name = 'a2'
+        self.b1 = TestActor()
+        self.b1.tag = 'b'
+        self.b1.name = 'b1'
         #
         self.z1.addActor(self.a1)
         self.z2.addActor(self.a2)
@@ -255,6 +258,23 @@ class TestWorlds(unittest.TestCase):
         self.assertEqual(set([]), self.z1.actors)
         self.assertEqual(set([self.a1]), self.z2.actors)
         self.assertEqual(set([]), self.z3.actors)
+
+    def testCanAddActorIntoTaggedZones(self):
+        """testCanAddActorIntoTaggedZones: should be able to add actors into zones by tag"""
+        z1 = serge.zone.TagIncludeZone(['a'])
+        z2 = serge.zone.TagIncludeZone(['b'])
+        z1.active = z2.active = True
+        self.w.addZone(z1)
+        self.w.addZone(z2)
+        self.w.addActor(self.a1)
+        self.w.addActor(self.a2)
+        self.w.addActor(self.b1)
+        #
+        # Actors should have gone to the right zones
+        self.assertTrue(z1.hasActor(self.a1))
+        self.assertTrue(z1.hasActor(self.a2))
+        self.assertTrue(z2.hasActor(self.b1))
+    
         
     def testCanRemoveActorUnzoned(self):
         """testCanRemoveActorUnzoned: can remove an actor that isn't in a zone"""

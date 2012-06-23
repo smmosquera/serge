@@ -230,11 +230,23 @@ class TestZones(unittest.TestCase):
     
     def testCanHaveAZoneThatChecksForTags(self):
         """testCanHaveAZoneThatChecksForTags: should be able to match containment to tags"""
-        raise NotImplementedError
-        
+        z = serge.zone.TagIncludeZone(['a','b'])
+        self.a1.tag = 'a'
+        self.a2.tag = 'b'
+        self.assertTrue(z.wouldContain(self.a1))
+        self.assertTrue(z.wouldContain(self.a2))
+        self.a2.tag = 'c'
+        self.assertFalse(z.wouldContain(self.a2))
+
     def testCanHaveAZoneThatChecksForExcludingTags(self):
         """testCanHaveAZoneThatChecksForExcludingTags: should be able to exclude tags from a zone"""
-        raise NotImplementedError
+        z = serge.zone.TagExcludeZone(['a','b'])
+        self.a1.tag = 'a'
+        self.a2.tag = 'b'
+        self.assertFalse(z.wouldContain(self.a1))
+        self.assertFalse(z.wouldContain(self.a2))
+        self.a2.tag = 'c'
+        self.assertTrue(z.wouldContain(self.a2))
         
        
         
