@@ -3,7 +3,7 @@ import traceback
 import logging
 import re
 
-version = '0.3.3.1'
+version = '0.3.4.1'
 
 #
 # Number of channels of audio - pygame default is 8 but

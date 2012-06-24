@@ -74,4 +74,6 @@ What's New
     Implemented a block to help with running time intensive operations asynchronously 
     The number of physics steps used by pymunk can now be configured
     Fixed issue with animated sprites not advancing properly if the framerate of the animation was high
-    
+0.3.5
+    Zones can now implement wouldContain to select actors based on certain criteria
+       

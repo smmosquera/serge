@@ -37,7 +37,12 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
     )
     
     def __init__(self, width=640, height=480, title='Serge', backcolour=(0,0,0), icon=None, fullscreen=False):
-        """Initialise the engine"""
+        """Initialise the engine
+        
+        :param width: width of the screen
+        :param height: height of the screen
+        
+        """
         self.title = title
         self.fullscreen = fullscreen
         self.addLogger()
@@ -81,7 +86,11 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         self._mouse = input.Mouse(self)
             
     def addWorld(self, world):
-        """Add a world to the engine"""
+        """Add a world to the engine
+        
+        :param world: the world instance to add
+        
+        """
         if world.name in self._worlds:
             raise DuplicateWorld('A world named "%s" already exists' % world.name)
         if world in self._worlds.values():
@@ -90,11 +99,19 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         world.setEngine(self)
         
     def removeWorld(self, world):
-        """Remove a world"""
+        """Remove a world from the engine
+        
+        :param world: the world instance to remove
+
+        """
         self.removeWorldNamed(world.name)
         
     def removeWorldNamed(self, name):
-        """Remove a world with a given name"""
+        """Remove a world with a given name
+        
+        :param name: the name of the world to remove
+
+        """
         try:
             del(self._worlds[name])
         except KeyError:
@@ -106,7 +123,11 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         self._current_world = None
         
     def getWorld(self, name):
-        """Return the named world"""
+        """Return the named world
+        
+        :param name: the name of the world to return
+
+        """
         try:
             return self._worlds[name]
         except KeyError:
@@ -117,18 +138,26 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         return self._worlds.values()
 
     def getCurrentWorld(self):
-        """Return the current world"""
+        """Return the currently selected world"""
         if self._current_world:
             return self._current_world
         else:
             raise NoCurrentWorld('There is no current world')
         
     def setCurrentWorld(self, world):
-        """Set the current world"""
+        """Set the current world
+        
+        :param world: the world to set as the current world
+
+        """
         self.setCurrentWorldByName(world.name)
         
     def setCurrentWorldByName(self, name):
-        """Set the current world to the one with the given name"""
+        """Set the current world to the one with the given name
+        
+        :param name: the name of the world to set as the current world
+
+        """
         self.log.info('Setting current world to %s' % name)
         if self._current_world_name:
             self._recent_worlds.append(self._current_world_name)
@@ -169,7 +198,12 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
             raise NoCurrentWorld('Cannot update when there is no current world')
         
     def run(self, fps, endat=None):
-        """Run the updates at the specified frames per second until the optional endtime"""
+        """Run the updates at the specified frames per second until the optional endtime
+        
+        :param fps: the target frames per second (integer)
+        :param endat: a time to stop the engine at (long), eg time.time()+60 to run for a minute
+        
+        """
         self.log.info('Engine starting (requested fps=%d)' % fps)
         clock = pygame.time.Clock()
         self._stop_requested = False
@@ -232,7 +266,12 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         self.log.info('Engine info: %s' % (self._stats,))
         
     def runAsync(self, fps, endat=None):
-        """Run the engine asynchronously"""
+        """Run the engine asynchronously
+        
+        :param fps: the target frames per second (integer)
+        :param endat: a time to stop the engine at (long), eg time.time()+60 to run for a minute
+        
+        """
         self.runner = threading.Thread(target=self.run, args=(fps, endat))
         self.runner.setDaemon(True)
         self.runner.start()
@@ -251,7 +290,11 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         return self.sprites
         
     def save(self, filename):
-        """Store our state"""
+        """Store the engine state in a file suitable for loading again in the furture
+        
+        :param filename: the name of the file to save into
+        
+        """
         with file(filename, 'w') as f:
             f.write(self.asString())
             
