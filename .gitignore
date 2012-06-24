@@ -3,5 +3,5 @@
 *.*~
 .*
 test/junk/*
-doc/*
 api/*
+doc/_build/*

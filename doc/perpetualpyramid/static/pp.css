@@ -1,0 +1,61 @@
+@import url('pyramid.css');
+
+div.logo {
+    text-align: left;
+    
+  background-color: #f2f2f2;
+  background-image: -moz-linear-gradient(top, #ffffff 0%, #f2f2f2 100%);
+  background-image: -ms-linear-gradient(top, #ffffff 0%, #f2f2f2 100%);
+  background-image: -o-linear-gradient(top, #ffffff 0%, #f2f2f2 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #ffffff), color-stop(1, #f2f2f2));
+  background-image: -webkit-linear-gradient(top, #ffffff 0%, #f2f2f2 100%);
+  background-image: linear-gradient(top, #ffffff 0%, #f2f2f2 100%);
+}
+
+div.sphinxsidebarwrapper {
+  border: 1px solid;
+  padding: 15px 20px;
+  margin: 0 0 10px 10px;
+  background-color: #fafafa;
+  border-color: #d0d0d0;
+}
+
+
+div.body {
+  border: 0px solid;
+  padding: 15px 20px;
+  margin: 0 0 20px;
+  background-color: #ffffff;
+  border-color: #d0d0d0;
+}
+
+
+div.related {
+  background-color: #ffffff;
+}
+
+div.document {
+  background-color: #ffffff;
+}
+body {
+  background-color: #ffffff;
+}
+
+div.sphinxsidebar #searchbox input[type="text"] {
+    width: 120px;
+}
+
+div.topic {
+  border: 1px solid;
+  padding: 15px 20px;
+  margin: 0 0 20px;
+  background-color: #fafafa;
+  border-color: #d0d0d0;
+}
+
+th.field-name {
+   font-size: 75%;
+}
+td.field-body {
+   font-size: 75%;
+}
