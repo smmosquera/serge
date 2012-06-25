@@ -378,7 +378,7 @@ class Sprite(Drawing):
     ### Cells ###
         
     def setCells(self):
-        """Set the cells of the animation"""
+        """Create the cells for the animation of this sprite"""
         self.cells = []
         #
         # Have we cached this set of cells
@@ -431,7 +431,8 @@ class Sprite(Drawing):
         if 0 <= number < len(self.cells):
             self.current_cell = number
         else:
-            raise InvalidCell('Cell number %d is out of range for this sprite' % number)
+            raise InvalidCell('Cell number %d is out of range (%d) for this sprite (%s)' % (
+                    number, self.getNumberOfCells(), self.name))
         
     def getCell(self):
         """Return the current cell number"""
