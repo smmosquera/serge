@@ -338,6 +338,7 @@ class FPSDisplay(NumericText):
         super(FPSDisplay, self).updateActor(interval, world)
         self.value = self.engine.getStats().average_frame_rate
         
+        
  
 class TextEntryWidget(serge.actor.MountableActor):
     """Implements a single line text entry widget
@@ -349,7 +350,7 @@ class TextEntryWidget(serge.actor.MountableActor):
     
     def __init__(self, tag, name, width, height, colour, font_size, font_name='DEFAULT', 
                     justify='center', background_visual=None, background_layer='background',
-                    show_cursor=False, blink_time=0.5):
+                    show_cursor=False, blink_time=0.5, has_focus=True):
         """Initialise the text entry widget"""
         super(TextEntryWidget, self).__init__(tag, name)
         #
@@ -367,7 +368,10 @@ class TextEntryWidget(serge.actor.MountableActor):
         self.colour = colour
         self.font_name = font_name
         self.blink_time = blink_time
-                    
+        self.has_focus = has_focus
+        #
+        self.resizeTo(width, height)
+        
     def setLayerName(self, layer_name):
         """Set the layer name"""
         super(TextEntryWidget, self).setLayerName(layer_name)
@@ -402,19 +406,109 @@ class TextEntryWidget(serge.actor.MountableActor):
         """Update the entry widget"""
         #
         # Handle the keystrokes
-        keys = self.keyboard.getClicked()
-        for key in keys:
-            if key in (pygame.K_BACKSPACE, pygame.K_DELETE, pygame.K_LEFT):
-                self.text.value = '' if self.text.value == '' else self.text.value[:-1]
-            elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
-                self.processEvent((serge.events.E_ACCEPT_ENTRY, self.text.value))
-            else:
-                try:
-                    self.text.value += chr(key)
-                except ValueError:
-                    self.log.debug('Invalid key (%s)' % key)
+        if self.has_focus:
+            keys = self.keyboard.getClicked()
+            for key in keys:
+                if key in (pygame.K_BACKSPACE, pygame.K_DELETE, pygame.K_LEFT):
+                    self.text.value = '' if self.text.value == '' else self.text.value[:-1]
+                elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                    self.processEvent((serge.events.E_ACCEPT_ENTRY, self.text.value))
+                elif key in (pygame.K_ESCAPE,):
+                    self.has_focus = False
+                elif key in (pygame.K_TAB,):
+                    pass 
+                else:
+                    if self.keyboard.isShiftDown():
+                        if ord('a') <= key <= ord('z'):
+                            key -= 32
+                        else:
+                            key -= 16
+                    try:
+                        self.text.value += chr(key)
+                    except ValueError:
+                        self.log.debug('Invalid key (%s)' % key)
         #
         # Position the cursor if we have one
         if self.cursor:
+            self.cursor.setLayerName(self.getLayerName())
             self.cursor.moveTo(self.text.x + self.text.width/2 + self.cursor.width/2, self.text.y)
-            
+            self.cursor.active = self.has_focus
+
+    def getText(self):
+        """Return the text value"""
+        return self.text.value
+        
+    def setText(self, text):
+        """Set the text value"""
+        self.text.value = text
+
+
+
+class FocusManager(serge.actor.CompositeActor):
+    """Manages focus between a number of entry widgets"""
+
+    def __init__(self, tag, name):
+        """Initialise the FocusManager"""
+        super(FocusManager, self).__init__(tag, name)
+    
+    def addedToWorld(self, world):
+        """We were added to the world"""
+        super(FocusManager, self).addedToWorld(world)
+        #
+        self.keyboard = serge.engine.CurrentEngine().getKeyboard()
+        
+    def addChild(self, actor):
+        """Add an actor to the manager"""
+        super(FocusManager, self).addChild(actor)
+        #
+        actor.linkEvent(serge.events.E_LEFT_CLICK, self.actorSelected, actor)
+        actor.linkEvent(serge.events.E_ACCEPT_ENTRY, self.actorEntry, actor)
+        
+    def actorSelected(self, obj, actor):
+        """An actor was selected"""
+        self.log.debug('Focus set to %s' % actor.getNiceName())
+        # Defocus
+        self.getChildren().forEach().has_focus = False
+        # Refocus
+        actor.has_focus = True
+        
+    def actorEntry(self, obj, actor):
+        """An entry was accepted"""
+        self.log.debug('Entry to %s' % actor.getNiceName())
+        self.processEvent((serge.events.E_ACCEPT_ENTRY, actor))
+        # Defocus
+        self.getChildren().forEach().has_focus = False
+        
+    def updateActor(self, interval, world):
+        """Update the manager"""
+        super(FocusManager, self).updateActor(interval, world)
+        #
+        # Watch for tab
+        if self.keyboard.isClicked(pygame.K_TAB):
+            children = self.getChildren()
+            if children:
+                # Find current focus
+                focus = [actor for actor in children if actor.has_focus]
+                # Defocus
+                children.forEach().has_focus = False
+                #
+                # Nobody has focus yet
+                if len(focus) == 0:
+                    children[0 if not self.keyboard.isShiftDown() else -1].has_focus = True
+                else:   
+                    #
+                    # Advance the focus
+                    pos = children.index(focus[0])
+                    if not self.keyboard.isShiftDown():
+                        # Unshifted
+                        if pos == len(children)-1:
+                            children[0].has_focus = True
+                        else:
+                            children[pos+1].has_focus = True
+                    else:
+                        # Shifted
+                        if pos == 0:
+                            children[-1].has_focus = True
+                        else:
+                            children[pos-1].has_focus = True
+                            

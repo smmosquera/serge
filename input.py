@@ -55,6 +55,7 @@ class Keyboard(common.Loggable):
         self.current_state = KeyState()
         self.previous_state = KeyState()
         self.current_state.key_states = pygame.key.get_pressed()
+        self.text_entered = []
 
     def isDown(self, key):
         """Return True if the key is down"""
@@ -91,9 +92,30 @@ class Keyboard(common.Loggable):
         keys = pygame.key.get_pressed()
         self.previous_state = self.current_state.getCopy()
         self.current_state.key_states = keys
+        #
+        events = pygame.event.get((pygame.KEYDOWN))
+        #
+        self.text_entered = []
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                self.text_entered.append(event.unicode)
+        
+    def isShiftDown(self):
+        """Return True if the shift key is down"""
+        return self.isDown(pygame.K_LSHIFT) or self.isDown(pygame.K_RSHIFT) or self.isDown(pygame.K_CAPSLOCK)
 
+    def isControlDown(self):
+        """Return True if the control key is down"""
+        return self.isDown(pygame.K_LCTRL) or self.isDown(pygame.K_RCTRL)
 
-    
+    def isAltDown(self):
+        """Return True if the alt key is down"""
+        return self.isDown(pygame.K_LALT) or self.isDown(pygame.K_RALT)
+
+    def getTextEntered(self):
+        """Return any text entered since the last call"""
+        return self.text_entered
+            
 class MouseState(object):
     """A structure that contains the states of our mouse buttons."""
     def __init__(self):
@@ -224,9 +246,6 @@ class Mouse(object):
         if not mouse_set:
             self.current_mouse_state.wheel_up_pressed = False
             self.current_mouse_state.wheel_down_pressed = False
-        #
-        # remove all other events so we don't fill up the queue
-        pygame.event.clear()
         
     def getScreenPos(self):
         """Return the pixel location relative to the screen and camera"""

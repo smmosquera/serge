@@ -4,7 +4,6 @@ Geometry
 .. contents::
 .. py:module:: events
 
-
 SpatialObject
 -------------
 
@@ -37,4 +36,12 @@ SimpleRect
     :members:
     
     
+.. py:module:: simplevecs
 
+Vec2d
+-----
+
+.. autoclass:: serge.simplevecs.Vec2d
+    :show-inheritance:
+    :members:
+    

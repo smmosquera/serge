@@ -230,8 +230,11 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
                 #
                 # Events that may have happened
                 self._handleEvents()
+                # Inputs
                 self._mouse.update(interval)
                 self._keyboard.update(interval)
+                pygame.event.clear()
+                # Sound
                 sound.Music.update(interval)
                 sound.Sounds.update(interval)                
                 if self._current_world:
