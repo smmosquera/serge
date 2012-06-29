@@ -76,4 +76,7 @@ What's New
     Fixed issue with animated sprites not advancing properly if the framerate of the animation was high
 0.3.5
     Zones can now implement wouldContain to select actors based on certain criteria
-       
+    Improved text entry widget
+    Keyboard now includes additional methods to help deal with entering text
+    Added an L-system block to be used to generate plants, vegetation etc
+    

@@ -71,7 +71,7 @@ class Zone(geometry.Rectangle, common.Loggable):
         #
         # Do physics if we need to
         if self._physics_objects:
-            self._updatePhysics(interval)
+            self.updatePhysics(interval)
     
     def wouldContain(self, actor):
         """Return True if this zone would contain the actor as it is right now
@@ -178,8 +178,14 @@ class Zone(geometry.Rectangle, common.Loggable):
         self._physics_objects.append(actor)
         actor.syncPhysics()
         
-    def _updatePhysics(self, interval):
-        """Perform a step of the physics engine"""
+    def updatePhysics(self, interval):
+        """Perform a step of the physics engine
+        
+        You do not normally need to call this method as it is called by the
+        updateZone method. You may call this to advance the physics simulation
+        along without affecting other game elements.
+        
+        """
         #
         # Globally applied forces
         self.space.gravity = self.global_force

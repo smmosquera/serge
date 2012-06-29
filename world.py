@@ -207,22 +207,23 @@ class World(common.Loggable, serialize.Serializable, common.EventAware):
         """Remove the actor from the world"""
         self.log.debug('Removing "%s" actor (%s)' % (actor.tag, actor.getNiceName()))
         #
-        # Tell the actor about it
-        actor.removedFromWorld(self)
-        #
         self._actors_need_resorting = True
         #
         # Try to remove from zones
         for z in self.zones:
             if z.hasActor(actor):
                 z.removeActor(actor)
-                return
-        #
-        # We didn't find it in the zone - maybe in the unzoned
-        if actor in self.unzoned_actors:
-            self.unzoned_actors.remove(actor)
+                break
         else:
-            raise UnknownActor('The actor %s was not found in the world' % actor)
+            #
+            # We didn't find it in the zone - maybe in the unzoned
+            if actor in self.unzoned_actors:
+                self.unzoned_actors.remove(actor)
+            else:
+                raise UnknownActor('The actor %s was not found in the world' % actor)
+        #
+        # Tell the actor about it
+        actor.removedFromWorld(self)
 
     def scheduleActorRemoval(self, actor):
         """Remove an actor at the end of the next update for the world

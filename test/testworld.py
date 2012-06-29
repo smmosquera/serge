@@ -417,6 +417,18 @@ class TestWorlds(unittest.TestCase):
         #
         # Should have called the event only once
         self.assertEqual(1, self._sched_done)
+        
+    def testRemovedFromWorldEventIsAfterRemoval(self):
+        """testRemovedFromWorldEventIsAfterRemoval: event should only fire when the actor is really gone"""
+        def checkIt(o, a):
+            self.assertFalse(self.w.hasActor(self.a1))
+        #
+        self.w.addZone(self.z1)
+        self._sched_done = 0
+        self.a1.linkEvent(serge.events.E_REMOVED_FROM_WORLD, checkIt)        
+        self.w.removeActor(self.a1)
+        
+    
                 
     def _sched1(self, obj, arg):
         """Routed to mark event"""
