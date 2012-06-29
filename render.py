@@ -53,7 +53,7 @@ class Renderer(common.Loggable, serialize.Serializable, common.EventAware):
         # 
         # Tried the following with flags but no impact pygame.FULLSCREEN|pygame.HWSURFACE|pygame.DOUBLEBUF
         flags = pygame.FULLSCREEN if self.fullscreen else 0
-        self.surface = pygame.display.set_mode((self.width, self.height), flags)
+        self.surface = pygame.display.set_mode((self.width, self.height), flags )
         for layer in self.layers:
             layer.setSurface(pygame.Surface((self.width, self.height), pygame.SRCALPHA, 32))
             layer.init()

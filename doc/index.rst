@@ -19,11 +19,12 @@ Class Structures:
     visual
     sound
     input
+    physical
     events
     geometry
     common
 
-.. py:module:: physical
+
     
 
 Indices and tables
