@@ -16,6 +16,10 @@ M_WHEEL_DOWN = 5
 KEYBOARD = 0
 MOUSE = 1
 
+#Type of key
+K_LETTER = 0
+K_CONTROL = 1
+
 class KeyState(object):
     """Represents the state of keyboard keys"""
     
@@ -52,6 +56,7 @@ class Keyboard(common.Loggable):
     def __init__(self):
         """Initialise the keyboard"""
         super(Keyboard, self).__init__()
+        self.addLogger()
         self.current_state = KeyState()
         self.previous_state = KeyState()
         self.current_state.key_states = pygame.key.get_pressed()
@@ -98,7 +103,10 @@ class Keyboard(common.Loggable):
         self.text_entered = []
         for event in events:
             if event.type == pygame.KEYDOWN:
-                self.text_entered.append(event.unicode)
+                if event.unicode:
+                    self.text_entered.append((K_LETTER, event.unicode))
+                else:
+                    self.text_entered.append((K_CONTROL, event.key))
         
     def isShiftDown(self):
         """Return True if the shift key is down"""

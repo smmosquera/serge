@@ -369,6 +369,7 @@ class TextEntryWidget(serge.actor.MountableActor):
         self.font_name = font_name
         self.blink_time = blink_time
         self.has_focus = has_focus
+        self.cursor_pos = 0
         #
         self.resizeTo(width, height)
         
@@ -407,32 +408,55 @@ class TextEntryWidget(serge.actor.MountableActor):
         #
         # Handle the keystrokes
         if self.has_focus:
-            keys = self.keyboard.getClicked()
-            for key in keys:
-                if key in (pygame.K_BACKSPACE, pygame.K_DELETE, pygame.K_LEFT):
-                    self.text.value = '' if self.text.value == '' else self.text.value[:-1]
-                elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
-                    self.processEvent((serge.events.E_ACCEPT_ENTRY, self.text.value))
-                elif key in (pygame.K_ESCAPE,):
-                    self.has_focus = False
-                elif key in (pygame.K_TAB,):
-                    pass 
+            #
+            # Letters
+            entered = self.keyboard.getTextEntered()
+            for typ, value in entered:
+                if typ == serge.input.K_LETTER:
+                    key = ord(value)
+                    if key == pygame.K_BACKSPACE:
+                        self._backspace()
+                    elif key ==  pygame.K_DELETE:
+                        self._delete()
+                    elif key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                        self.processEvent((serge.events.E_ACCEPT_ENTRY, self.text.value))
+                    elif key in (pygame.K_ESCAPE,):
+                        self.has_focus = False
+                    elif key in (pygame.K_TAB,):
+                        pass 
+                    else:
+                        self.cursor_pos += 1
+                        self.text.value = self.text.value[0:self.cursor_pos-1] + value + self.text.value[self.cursor_pos-1:]
+                elif typ == serge.input.K_CONTROL:
+                    if value == pygame.K_LEFT:
+                        self.cursor_pos = max(0, self.cursor_pos-1)
+                    elif value == pygame.K_RIGHT:
+                        self.cursor_pos = min(len(self.text.value), self.cursor_pos+1)
+                    elif value in (pygame.K_UP, pygame.K_HOME):
+                        self.cursor_pos = 0
+                    elif value in (pygame.K_DOWN, pygame.K_END):
+                        self.cursor_pos = len(self.text.value)
                 else:
-                    if self.keyboard.isShiftDown():
-                        if ord('a') <= key <= ord('z'):
-                            key -= 32
-                        else:
-                            key -= 16
-                    try:
-                        self.text.value += chr(key)
-                    except ValueError:
-                        self.log.debug('Invalid key (%s)' % key)
+                    raise ValueError('Unknown key type "%s"' % typ)
         #
         # Position the cursor if we have one
         if self.cursor:
             self.cursor.setLayerName(self.getLayerName())
-            self.cursor.moveTo(self.text.x + self.text.width/2 + self.cursor.width/2, self.text.y)
-            self.cursor.active = self.has_focus
+            font = self.text.visual.font
+            position = font.size(self.text.value)[0]/2 - font.size(self.text.value[self.cursor_pos:])[0]
+            self.cursor.moveTo(self.text.x + position + self.cursor.width/2, self.text.y)
+            self.cursor.active = self.hasFocus()
+
+    def _backspace(self):
+        """Do a backspace"""
+        if self.cursor_pos > 0: 
+            self.text.value = self.text.value[0:self.cursor_pos-1] + self.text.value[self.cursor_pos:]
+            self.cursor_pos = max(0, self.cursor_pos-1)
+
+    def _delete(self):
+        """Do a delete"""
+        if self.cursor_pos < len(self.text.value): 
+            self.text.value = self.text.value[0:self.cursor_pos] + self.text.value[self.cursor_pos+1:]
 
     def getText(self):
         """Return the text value"""
@@ -442,8 +466,20 @@ class TextEntryWidget(serge.actor.MountableActor):
         """Set the text value"""
         self.text.value = text
 
-
-
+    def getFocus(self):
+        """Get the focus"""
+        self.has_focus = True
+        self.cursor_pos = len(self.text.value)
+        
+    def loseFocus(self):
+        """Lose the focus"""
+        self.has_focus = False
+        
+    def hasFocus(self):
+        """Return True if we have focus"""
+        return self.has_focus
+        
+        
 class FocusManager(serge.actor.CompositeActor):
     """Manages focus between a number of entry widgets"""
 
@@ -468,16 +504,16 @@ class FocusManager(serge.actor.CompositeActor):
         """An actor was selected"""
         self.log.debug('Focus set to %s' % actor.getNiceName())
         # Defocus
-        self.getChildren().forEach().has_focus = False
+        self.getChildren().forEach().loseFocus()
         # Refocus
-        actor.has_focus = True
+        actor.getFocus()
         
     def actorEntry(self, obj, actor):
         """An entry was accepted"""
         self.log.debug('Entry to %s' % actor.getNiceName())
         self.processEvent((serge.events.E_ACCEPT_ENTRY, actor))
         # Defocus
-        self.getChildren().forEach().has_focus = False
+        self.getChildren().forEach().loseFocus()
         
     def updateActor(self, interval, world):
         """Update the manager"""
@@ -488,13 +524,13 @@ class FocusManager(serge.actor.CompositeActor):
             children = self.getChildren()
             if children:
                 # Find current focus
-                focus = [actor for actor in children if actor.has_focus]
+                focus = [actor for actor in children if actor.hasFocus()]
                 # Defocus
-                children.forEach().has_focus = False
+                children.forEach().loseFocus()
                 #
                 # Nobody has focus yet
                 if len(focus) == 0:
-                    children[0 if not self.keyboard.isShiftDown() else -1].has_focus = True
+                    children[0 if not self.keyboard.isShiftDown() else -1].getFocus()
                 else:   
                     #
                     # Advance the focus
@@ -502,13 +538,13 @@ class FocusManager(serge.actor.CompositeActor):
                     if not self.keyboard.isShiftDown():
                         # Unshifted
                         if pos == len(children)-1:
-                            children[0].has_focus = True
+                            children[0].getFocus()
                         else:
-                            children[pos+1].has_focus = True
+                            children[pos+1].getFocus()
                     else:
                         # Shifted
                         if pos == 0:
-                            children[-1].has_focus = True
+                            children[-1].getFocus()
                         else:
-                            children[pos-1].has_focus = True
+                            children[pos-1].getFocus()
                             
