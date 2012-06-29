@@ -2,6 +2,8 @@
 
 """
 
+import random
+
 class LSystem(object):
     """Implements an L-System generator"""
 
@@ -68,10 +70,11 @@ class LSystem(object):
 class Rule(object):
     """A rule for the L-System"""
 
-    def __init__(self, predecessor, successor):
+    def __init__(self, predecessor, successor, probability=1.0):
         """Initialise the Rule"""
         self.predecessor = predecessor
         self.successor = successor
+        self.probability = probability
         
     def process(self, state):
         """Process the state
@@ -80,7 +83,7 @@ class Rule(object):
         If we do not match then return nothing and a zero cursor offset.
         
         """
-        if state.startswith(self.predecessor):
+        if state.startswith(self.predecessor) and random.random() <= self.probability:
             return self.successor, len(self.predecessor)
         else:
             return '', 0

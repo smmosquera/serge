@@ -65,7 +65,22 @@ class TestLSystem(unittest.TestCase):
         self.l.doSteps(2)
         self.assertEqual('11[1[0]0]1[0]0', self.l.getState())
         
+    def testCanDoStochasitcGrammar(self):
+        """testCanDoStochasitcGrammar: should be able to have stochastic rules"""
+        self.l.setAxiom('01')        
+        self.l.addRule(R('0', 'A0', probability=0.5))
+        self.l.addRule(R('1', 'B1', probability=0.5))
+        #
+        # If we run this then we should end up with some A's and B's
+        self.l.doSteps(100)
+        na = sum([1 for i in self.l.getState() if i == 'A'])
+        nb = sum([1 for i in self.l.getState() if i == 'B'])
+        #
+        self.assertNotEqual(0, na)
+        self.assertNotEqual(0, nb)
+        self.assertTrue(abs(na-nb) < 10)
         
+           
        
         
 
