@@ -599,7 +599,42 @@ class TestPhysics(unittest.TestCase, VisualTester):
         self.assertAlmostEqual(-45.0, a.getAngle())
         # Check rendering
         self.check45Rect(r.getSurface(), (0, 255, 0, 255), 60, 50, 50, 50, 'green rotated')
+ 
+    ### Optimisations ###
     
+    
+    def testCanSleepPhysics(self):
+        """testCanSleepPhysics: should be able to sleep the physics for an item"""
+        a = serge.actor.Actor('test')
+        a.setPhysical(serge.physical.PhysicalConditions(mass=1.0, radius=1.0, velocity=(0.0, 0.0), force=(1.0, 0.0)))
+        a.moveTo(0,0)
+        self.w.addActor(a)
+        #
+        self.w.sleepPhysicsForActors([a])
+        self.w.updateWorld(1000.0)
+        #
+        # Should accelerate at 1 meter per second per second
+        self.assertAlmostEqual(0.0, a.getPhysical().velocity[0])
+        self.w.updateWorld(1000.0)
+        self.assertAlmostEqual(0.0, a.getPhysical().velocity[0])
+   
+    def testCanUnsleepPhysics(self):
+        """testCanUnsleepPhysics: should be able to wake up the physics"""
+        a = serge.actor.Actor('test')
+        a.setPhysical(serge.physical.PhysicalConditions(mass=1.0, radius=1.0, velocity=(0.0, 0.0), force=(1.0, 0.0)))
+        a.moveTo(0,0)
+        self.w.addActor(a)
+        #
+        self.w.sleepPhysicsForActors([a])
+        self.w.updateWorld(1000.0)
+        #
+        # Should accelerate at 1 meter per second per second
+        self.assertAlmostEqual(0.0, a.getPhysical().velocity[0])
+        self.w.wakePhysicsForActors([a])
+        self.w.updateWorld(1000.0)
+        self.assertAlmostEqual(1.0, a.getPhysical().velocity[0])
+       
+   
     
 if __name__ == '__main__':
     unittest.main()

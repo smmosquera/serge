@@ -307,4 +307,32 @@ class World(common.Loggable, serialize.Serializable, common.EventAware):
         """Set the global force for physics"""
         for z in self.zones:
             z.setGlobalForce(force)
+    
+    def sleepPhysicsForActors(self, actors):
+        """Tell the actors to go to sleep from a physics perspective
+        
+        The actors will still be visible and will still be updated but they
+        will not update their physics. Useful for optimising when an actor
+        does not need to interact with the physics simulation for a while.
+        
+        If an actor is unzoned then this will have no impact on them
+        
+        """
+        for actor in actors:
+            for z in self.zones:
+                if z.hasActor(actor):
+                    z.sleepActor(actor)
+
+    def wakePhysicsForActors(self, actors):
+        """Tell the actors to go to wake up from a physics perspective 
+        
+        Actors that were put to sleep (via sleepPhysicsForActors) will be woken
+        up and take part in the physics simulation again.
+        
+        """
+        for actor in actors:
+            for z in self.zones:
+                if z.hasActor(actor):
+                    z.wakeActor(actor)
+        
         

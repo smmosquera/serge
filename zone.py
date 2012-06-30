@@ -219,6 +219,24 @@ class Zone(geometry.Rectangle, common.Loggable):
         """Set the global force for physics"""
         self.global_force = force
 
+    def sleepActor(self, actor):
+        """Tell the actor to go to sleep from a physics perspective
+        
+        The actor will still be visible and will still be updated but it
+        will not update its physics. Useful for optimising when an actor
+        does not need to interact with the physics simulation for a while.
+
+        """
+        actor.getPhysical().body.sleep()
+        
+    def wakeActor(self, actor):
+        """Tell the actor to go to wake up from a physics perspective 
+        
+        An actor that was put to sleep (via sleepActor) will be woken
+        up and take part in the physics simulation again.
+
+        """
+        actor.getPhysical().body.activate()
 
 
 class TagIncludeZone(Zone):
