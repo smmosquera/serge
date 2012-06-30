@@ -180,3 +180,29 @@ def fadeSurface(surface, v):
     """Fade the given suface by an amount 0 to 255 - 0 is completely faded"""
     surface.fill((v, v, v, v), special_flags=pygame.BLEND_RGBA_SUB)    
     return surface
+    
+def gaussianBlur(surface, sigma):
+    """This function takes a pygame surface, converts it to a numpy array
+    carries out gaussian blur, converts back then returns the pygame surface.
+    """
+    from scipy import signal, ndimage
+    # Convert to a NumPy array.
+    # In theory this should be able to be surfarray.pixels3d fro direct access.
+    np_array = pygame.surfarray.array3d(surface)
+    alpha = pygame.surfarray.pixels_alpha(surface)
+    
+    # Filter the image
+    result = ndimage.filters.gaussian_filter(np_array, 
+                            sigma=(sigma, sigma, 0),
+                            order=0,
+                            mode='reflect'
+                            )
+                            
+    #import pdb; pdb.set_trace()
+    new_alpha = ndimage.filters.gaussian_filter(alpha, sigma=(sigma, sigma), order=0, mode='reflect')
+
+    # Convert back to a surface.          
+    surf = pygame.surfarray.make_surface(result).convert_alpha()
+    pygame.surfarray.pixels_alpha(surf)[:] = new_alpha
+    
+    return surf
