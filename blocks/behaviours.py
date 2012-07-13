@@ -197,7 +197,7 @@ class Behaviour(serge.common.Loggable):
 class SnapshotOnKey(Behaviour):
     """Take a snapshot of the screen when the user presses a key"""
 
-    def __init__(self, key=pygame.K_s, size=(800, 600), location='', overwrite=True):
+    def __init__(self, key=pygame.K_s, size=(0, 0, 800, 600), location='', overwrite=True):
         """Initialise the ScreenShotOnKey"""
         super(SnapshotOnKey, self).__init__()
         self.key = key
@@ -658,7 +658,13 @@ class Delay(TimedOneshotCallback):
         
             
 class ParallaxMotion(Behaviour):
-    """Move one object in relation to another"""
+    """Move one object in relation to another
+    
+    :param parent: the object to move relative to
+    :param sx: fraction of x movement relative to parent (0.0 = no parallax, 1.0 = stationary)
+    :param sy: fraction of y movement relative to parent
+    
+    """
 
     def __init__(self, parent, (sx, sy)):
         """Initialise the ParallaxMotion"""
