@@ -137,10 +137,5 @@ Building Blocks
     :undoc-members:
     :show-inheritance:
 
-Subpackages
------------
 
-.. toctree::
-
-    serge.blocks.fysom
 

@@ -1,5 +1,7 @@
 """Utilities to do with cardinal directions"""
 
+from serge.simplevecs import Vec2d
+
 N = 'n'
 S = 's'
 E = 'e'
@@ -36,7 +38,7 @@ _reverse_directions = dict((v, e) for e, v in _directions.iteritems())
 
 def getVectorFromCardinal(direction):
     """Return the vector for a cardinal direction"""
-    return _directions[direction]
+    return Vec2d(_directions[direction])
 
 def getCardinalFromVector(vector):
     """Return the cardinal name from the vector"""  
@@ -58,4 +60,11 @@ def getOppositeCardinal(cardinal):
 def getAngleFromCardinal(direction):
     """Return the angle for a cardinal direction"""
     return _angles[direction]
+
+def getCardinalFromAngle(angle):
+    """Return the cardinal for an angle"""
+    for c, a in _angles.iteritems():
+        if angle == int(a) or angle-360 == int(a) or angle+360 == int(a):
+            return c
+    raise KeyError('Angle not a cardinal: %s' % angle)
 

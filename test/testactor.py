@@ -641,10 +641,10 @@ class TestActor(unittest.TestCase):
         a.getPhysical().body.apply_force((100,0))
         #
         self.w.addActor(a)
-        self.z.setPhysicsStepsize(10)
+        self.z.setPhysicsStepsize(1)
         for i in range(100):
             #print a.x, a.y, b.x, b.y, c.x, c.y
-            self.w.updateWorld(1000)
+            self.w.updateWorld(100)
             a.getPhysical().body.reset_forces()
         #
         self.assertNotEqual((100, 100), (a.x, a.y))
@@ -774,10 +774,10 @@ class TestActor(unittest.TestCase):
         a.getPhysical().body.apply_force((100,0))
         #
         self.w.addActor(a)
-        self.z.setPhysicsStepsize(10)
+        self.z.setPhysicsStepsize(1)
         for i in range(100):
             #print a.x, a.y, b.x, b.y, c.x, c.y
-            self.w.updateWorld(1000)
+            self.w.updateWorld(100)
             a.getPhysical().body.reset_forces()
         self.assertNotEqual((100, 100), (a.x, a.y))
         self.assertAlmostEqual(pymunk.Vec2d((10,20)).length, pymunk.Vec2d(b.getPhysical().body.position-a.getPhysical().body.position).length, 1)

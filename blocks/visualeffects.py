@@ -201,8 +201,12 @@ def gaussianBlur(surface, sigma):
     #import pdb; pdb.set_trace()
     new_alpha = ndimage.filters.gaussian_filter(alpha, sigma=(sigma, sigma), order=0, mode='reflect')
 
-    # Convert back to a surface.          
-    surf = pygame.surfarray.make_surface(result).convert_alpha()
+    # Convert back to a surface.  ... seems to periodically fail
+    try:        
+        surf = pygame.surfarray.make_surface(result).convert_alpha()
+    except:
+        surf = pygame.surfarray.make_surface(result).convert_alpha()
+    #        
     pygame.surfarray.pixels_alpha(surf)[:] = new_alpha
     
     return surf

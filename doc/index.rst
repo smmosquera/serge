@@ -4,6 +4,7 @@ Serge Engine Documentation
 Documentation Overview:
 
 .. toctree::
+    :maxdepth: 1
 
     engineoverview
     tutorial
