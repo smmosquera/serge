@@ -89,7 +89,22 @@ class TestSoundTexture(unittest.TestCase):
         self.assertEqual([x1], x)
         self.assertEqual((100,50), x[0].location)
         self.assertEqual(50, x[0].dropoff)
-        
+
+    def testFailIfPositionalUpdateAndNoListener(self):
+        """testFailIfPositionalUpdateAndNoListener: should fail if do an updateActor and no listener set"""
+        self.t.addAmbientSound(self.s1)
+        self.t.updateActor(0, None)
+
+    def testDontFailIfNoPositionalUpdateAndNoListener(self):
+        """testDontFailIfNoPositionalUpdateAndNoListener: should not fail if no positional and do an updateActor and no listener set"""
+        x1 = serge.blocks.sounds.LocationalSound(self.s1, (100, 50), 50)
+        self.t.addPositionalSound(x1)
+        #
+        # If you don't set a listener with positional sounds then throw an error
+        # No strictly necessary but it is confusing to debug when you do this and it
+        # is almost certainly not what you want to do
+        self.assertRaises(serge.blocks.sounds.NoListener, self.t.updateActor, 0, None)
+            
     def testVolumeOfPositionalSoundAffectsVolume(self):
         """testVolumeOfPositionalSoundAffectsVolume: volume should be dependent on listener position"""
         x1 = serge.blocks.sounds.LocationalSound(self.s1, (100, 50), 50)

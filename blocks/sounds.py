@@ -6,6 +6,9 @@ import serge.sound
 import serge.actor
 
 
+class NoListener(Exception): """Positional sound enabled but there is no listener set"""
+
+
 class SoundTexture(serge.actor.Actor):
     """An actor that manages a number of sounds to create a texture
     
@@ -22,6 +25,7 @@ class SoundTexture(serge.actor.Actor):
         self.sounds = []
         self.listener = None
         self._master_volume = 1.0
+        self._listener_required = False
         
     def setListener(self, listener):
         """Set the listener for the sounds
@@ -55,7 +59,8 @@ class SoundTexture(serge.actor.Actor):
         
         """
         self.sounds.append(sound)
-
+        self._listener_required = True
+        
     def getSounds(self):
         """Return all the sounds that we are controlling"""
         return self.sounds
@@ -105,6 +110,8 @@ class SoundTexture(serge.actor.Actor):
             for sound in self.getSounds():
                 volume = sound.get_scaled_volume((self.listener.x, self.listener.y))
                 sound.set_volume(volume*self._master_volume)
+        elif self._listener_required:
+            raise NoListener('A listener has not been set for this texture (%s)' % self.getNiceName())
                     
 
 
@@ -115,7 +122,7 @@ class AmbientSound(serge.sound.SoundItem):
         """Initialise the sound"""
         super(AmbientSound, self).__init__(sound=sound)
         
-    def get_scaled_volume(self, listener_position, master_volume):
+    def get_scaled_volume(self, listener_position):
         """Return the sound volume according to the listener position"""
         return 1.0
                
