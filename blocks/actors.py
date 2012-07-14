@@ -202,7 +202,7 @@ class MuteButton(serge.actor.Actor):
         """Clicked on the button"""
         if self.mute_sound:
             serge.sound.Sounds.toggle()
-        if self.mute_sound:
+        if self.mute_music:
             serge.sound.Music.toggle()
         self.visual.setCell(1 if self.visual.getCell() == 0 else 0)
 

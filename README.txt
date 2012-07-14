@@ -82,4 +82,7 @@ What's New
 0.4 
     First stand-alone release of the engine
     Includes documentation and two tutorials
+0.4.1
+    Fixed bug in MuteButton - would always mute music regardless of the flag setting
+    Fixed bug in Sound - pause/unpause behaviour was not working properly for sounds (ok for music)
     

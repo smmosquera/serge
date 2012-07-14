@@ -26,18 +26,24 @@ class AudioRegistry(registry.GeneralStore, common.EventAware):
         super(AudioRegistry, self).__init__()
         self._paused = False
         self.initEvents()
-    
+        self.playing = None
+
     def play(self, name, loops=0):
         """Play a sound"""
         self.getItem(name).play(loops)
-    
+        self.playing = self.getItem(name)
+   
     def pause(self):
         """Pause all sounds"""
         self._paused = True
-        
+        if self.playing:
+            self.playing.pause()
+
     def unpause(self):
         """Unpause all sounds"""
         self._paused = False
+        if self.playing:
+            self.playing.unpause()
     
     def toggle(self):
         """Toggle whether music or sound is playing or not"""
@@ -86,7 +92,6 @@ class MusicStore(AudioRegistry):
     def __init__(self):
         """Initialise the store"""
         super(MusicStore, self).__init__()
-        self.playing = None
         self._last_playing = None
         self.playlist = None
         
@@ -99,23 +104,6 @@ class MusicStore(AudioRegistry):
         self.raw_items.append([name, path])
         self.items[name] = MusicItem(self._resolveFilename(path))
         return self.items[name]
-
-    def play(self, name, loops=0):
-        """Play a sound"""
-        super(MusicStore, self).play(name, loops)
-        self.playing = self.getItem(name)
-   
-    def pause(self):
-        """Pause all sounds"""
-        super(MusicStore, self).pause()
-        if self.playing:
-            self.playing.pause()
-
-    def unpause(self):
-        """Unpause all sounds"""
-        super(MusicStore, self).unpause()
-        if self.playing:
-            self.playing.unpause()
 
     def update(self, interval):
         """Update the registry looking for events"""
@@ -216,11 +204,11 @@ class SoundItem(object):
     
     def pause(self):
         """Pause the music"""
-        self._sound.pause()
+        self._sound.stop()
         
     def unpause(self):
         """Pause the music"""
-        self._sound.unpause()
+        self._sound.play()
 
     def stop(self):
         """Stop the music"""
