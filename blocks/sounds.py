@@ -161,4 +161,22 @@ class LocationalSounds(AmbientSound):
             total += max(0.0, 1.0-dist/self.dropoff)
         return min(1.0, total)
        
+class ActorsWithTagSound(AmbientSound):
+    """A series of sounds that are located on actors who are in the world and have a certain tag"""
+    
+    def __init__(self, sound, world, tag, dropoff):
+        """Initialise the sound"""
+        super(ActorsWithTagSound, self).__init__(sound)
+        #
+        self.world = world
+        self.tag = tag
+        self.dropoff = dropoff
         
+    def get_scaled_volume(self, listener_position):
+        """Update the sound volume according to the listener position"""
+        total = 0.0
+        for actor in self.world.findActorsByTag(self.tag):
+            dist = math.sqrt((listener_position[0]-actor.x)**2 +(listener_position[1]-actor.y)**2)
+            total += max(0.0, 1.0-dist/self.dropoff)
+        return min(1.0, total)   
+            

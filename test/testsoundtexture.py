@@ -17,9 +17,16 @@ class TestSoundTexture(unittest.TestCase):
 
     def setUp(self):
         """Set up the tests"""
-        self.a1 = serge.actor.Actor('a1', 'a1')
-        self.a2 = serge.actor.Actor('a2', 'a2')
-        self.a3 = serge.actor.Actor('a3', 'a3')
+        self.a1 = serge.actor.Actor('a', 'a1')
+        self.a2 = serge.actor.Actor('a', 'a2')
+        self.a3 = serge.actor.Actor('b', 'a3')
+        self.w = serge.world.World('one')
+        self.z = serge.zone.Zone()
+        self.w.addZone(self.z)
+        self.z.active = True
+        self.w.addActor(self.a1)
+        self.w.addActor(self.a2)
+        self.w.addActor(self.a3)
         #
         self.t = serge.blocks.sounds.SoundTexture('s', 's')
         #
@@ -154,6 +161,62 @@ class TestSoundTexture(unittest.TestCase):
         x1.location = (100,100)
         self.t.updateActor(0, None)
         self.assertEqual(1, x1.get_volume())
+    
+    def testCanPositionSoundsOnActors(self):
+        """testCanPositionSoundsOnActors: should be able to have sounds positioned on actors"""
+        x1 = serge.blocks.sounds.ActorsWithTagSound(self.s1, self.w, 'a', 50)
+        self.t.addPositionalSound(x1)
+        self.t.setListener(self.a3)
+        #
+        self.a1.moveTo(100, 50)
+        self.a2.moveTo(200,100)
+        #
+        # Move to edge of listening range
+        self.a3.moveTo(50,50)
+        self.t.updateActor(0, None)
+        self.assertEqual(0, x1.get_volume())
+        self.a3.moveTo(300,100)
+        self.t.updateActor(0, None)
+        self.assertEqual(0, x1.get_volume())
+        #
+        # Move to origin of listening range
+        self.a3.moveTo(100,50)
+        self.t.updateActor(0, None)
+        self.assertEqual(1, x1.get_volume())
+        self.a3.moveTo(200,100)
+        self.t.updateActor(0, None)
+        self.assertEqual(1, x1.get_volume())
+        #
+        # Move to middle of listening range
+        self.a3.moveTo(150,75)
+        self.t.updateActor(0, None)
+        self.assertEqual(0.0, x1.get_volume())
+
+    def testPositionSoundsOnActorsOnRemoval(self):
+        """testPositionSoundsOnActorsOnRemoval: when removing actors with sounds the sound goes away"""
+        x1 = serge.blocks.sounds.ActorsWithTagSound(self.s1, self.w, 'a', 50)
+        self.t.addPositionalSound(x1)
+        self.t.setListener(self.a3)
+        #
+        self.a1.moveTo(100, 50)
+        self.a2.moveTo(200,100)
+        #
+        # Move to origin of listening range
+        self.a3.moveTo(100,50)
+        self.t.updateActor(0, None)
+        self.assertEqual(1, x1.get_volume())
+        self.a3.moveTo(200,100)
+        self.t.updateActor(0, None)
+        self.assertEqual(1, x1.get_volume())
+        #
+        self.w.removeActor(self.a1)        
+        self.a3.moveTo(100,50)
+        self.t.updateActor(0, None)
+        self.assertEqual(0, x1.get_volume())
+        self.a3.moveTo(200,100)
+        self.t.updateActor(0, None)
+        self.assertEqual(1, x1.get_volume())
+         
                 
     def testCanHaveMultiplePositionalSounds(self):
         """testCanHaveMultiplePositionalSounds: should be able to associate multiple positional sounds with a single sound"""
