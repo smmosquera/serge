@@ -1,3 +1,7 @@
+
+.. image:: _static/logo.png
+    :align: right
+    
 Serge Engine Documentation
 ==========================
 
