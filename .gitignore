@@ -5,3 +5,4 @@
 test/junk/*
 api/*
 doc/_build/*
+versions/*

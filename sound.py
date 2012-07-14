@@ -29,7 +29,12 @@ class AudioRegistry(registry.GeneralStore, common.EventAware):
         self.playing = None
 
     def play(self, name, loops=0):
-        """Play a sound"""
+        """Play a sound
+        
+        :param name: the name of the sound to play
+        :param loops: the number of times to loop the sound (0=do not loop, -1=loop forever)
+        
+        """
         self.getItem(name).play(loops)
         self.playing = self.getItem(name)
    
@@ -57,7 +62,11 @@ class AudioRegistry(registry.GeneralStore, common.EventAware):
         return self._paused
 
     def update(self, interval):
-        """Update the registry looking for events"""
+        """Update the registry looking for events
+        
+        The method is called automatically by the engine.
+        
+        """
 
     def isPlaying(self):
         """Return True if we are playing"""
@@ -106,7 +115,11 @@ class MusicStore(AudioRegistry):
         return self.items[name]
 
     def update(self, interval):
-        """Update the registry looking for events"""
+        """Update the registry looking for events
+        
+        The method is called automatically by the engine.
+        
+        """
         super(MusicStore, self).update(interval)
         if not self.isPlaying() and self._last_playing:
             self.processEvent((events.E_TRACK_ENDED, self))
@@ -124,7 +137,11 @@ class MusicStore(AudioRegistry):
         return pygame.mixer.music.get_busy()
 
     def isPlayingSong(self, name):
-        """Return True if the named song is playing"""
+        """Return True if the named song is playing
+        
+        :param name: the name of the music item
+        
+        """
         return self.playing == self.getItem(name)
     
     def setPlaylist(self, item_list):
@@ -135,16 +152,24 @@ class MusicStore(AudioRegistry):
         self.playlist = item_list
         
     def fadeout(self, time):
-        """Fadeout the currently playing track"""
+        """Fadeout the currently playing track
+        
+        :param time: the time over which the music fades out in seconds (0=immediate)
+        
+        """
         pygame.mixer.music.fadeout(int(time))
         self.playing = False
 
     def setVolume(self, volume):
-        """Set the volume"""
+        """Set the volume
+        
+        :param volume: the volume of the music (0=silent, 1=full volume)
+        
+        """
         pygame.mixer.music.set_volume(volume)
         
     def getVolume(self):
-        """Get the volume"""
+        """Returns the volume (0=silent, 1=full volume)"""
         return pygame.mixer.music.get_volume()
 
            
@@ -157,7 +182,11 @@ class MusicItem(object):
         self._paused = False
     
     def play(self, loops=0):
-        """Play the music"""
+        """Play the music
+        
+        :param loops: the number of times to loop the music (0=do not loop, -1=loop forever)
+        
+        """
         pygame.mixer.music.stop()
         pygame.mixer.music.load(self._path)
         Music.playing = self
@@ -188,46 +217,65 @@ class MusicItem(object):
     
     
 class SoundItem(object):
-    """Represents a sound item"""
+    """Represents a sound item
     
-    def __init__(self, path):
+    :param path: the path to the sound file
+    
+    """
+    
+    def __init__(self, path=None, sound=None):
         """Initialise the sound"""
-        self._sound = pygame.mixer.Sound(path)
+        if path:
+            self._sound = pygame.mixer.Sound(path)
+        else:
+            self._sound = sound
         self._channel = None
-        
+    
     def play(self, loops=0):
-        """Play the music"""
+        """Play the music
+        
+        :param loops: the number of times to loop the sound (0=do not loop, -1=loop forever)
+        
+        """
         if not Sounds.isPaused():
             self._channel = self._sound.play(loops)
             return True
         return False
     
     def pause(self):
-        """Pause the music"""
+        """Pause the sound"""
         self._sound.stop()
         
     def unpause(self):
-        """Pause the music"""
+        """Pause the sound"""
         self._sound.play()
 
     def stop(self):
-        """Stop the music"""
+        """Stop the sound"""
         self._sound.stop()
         
     def set_volume(self, volume):
-        """Set the volume"""
+        """Set the volume of the sound
+        
+        :param volume: the volume of the sound (0=silent, 1=full volume)
+        
+        """
         self._sound.set_volume(volume)
         
     def get_volume(self):
-        """Get the volume"""
+        """Return the volume that the sound is playing at (0=silent, 1=full volume)"""
         return self._sound.get_volume()
         
     def fadeout(self, time):
-        """Fadeout the sound"""
+        """Fadeout the sound
+        
+        :param time: the time over which the sound fades out in seconds (0=immediate)
+        
+        """
         self._sound.fadeout(time)
 
     def isPlaying(self):
-        """Return True if we are playing"""
+        """Return True if the sound is currently playing"""
         if self._channel and self._channel.get_busy():
             return True
         else:
