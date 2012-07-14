@@ -89,7 +89,12 @@ class SoundTexture(serge.actor.Actor):
     def pause(self):
         """Pause the sounds"""
         for sound in self.getSounds():
-            sound.pause()    
+            sound.pause() 
+               
+    def stop(self):
+        """Stop the sounds"""
+        for sound in self.getSounds():
+            sound.stop() 
             
     def updateActor(self, interval, world):
         """Update the actor"""

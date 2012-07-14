@@ -81,6 +81,14 @@ Building Blocks
     :undoc-members:
     :show-inheritance:
 
+:mod:`sounds` Module
+------------------------
+
+.. automodule:: serge.blocks.sounds
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
 :mod:`singletons` Module
 ------------------------
 

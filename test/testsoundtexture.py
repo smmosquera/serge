@@ -46,6 +46,16 @@ class TestSoundTexture(unittest.TestCase):
         self.t.pause()
         self.assertEqual([False, False], [s.playing for s in [self.s1, self.s2]])
 
+    def testCanStopAll(self):
+        """testCanStopAll: should be able to stop all"""
+        self.t.addAmbientSound(self.s1)
+        self.t.addAmbientSound(self.s2)
+        self.assertEqual([False, False], [s.playing for s in [self.s1, self.s2]])
+        self.t.play()
+        self.assertNotEqual([False, False], [s.playing for s in [self.s1, self.s2]])
+        self.t.stop()
+        self.assertEqual([False, False], [s.playing for s in [self.s1, self.s2]])
+
     def testCanPlayAll(self):
         """testCanPlayAll: should be able to play all"""
         self.t.addAmbientSound(self.s1)
