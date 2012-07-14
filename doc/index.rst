@@ -6,9 +6,9 @@ Documentation Overview:
 .. toctree::
     :maxdepth: 1
 
-    engineoverview
     tutorial
-    blocks
+    usefulblocks
+    engineoverview
     
 Class Structures:
 

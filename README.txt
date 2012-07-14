@@ -79,4 +79,7 @@ What's New
     Improved text entry widget
     Keyboard now includes additional methods to help deal with entering text
     Added an L-system block to be used to generate plants, vegetation etc
+0.4 
+    First stand-alone release of the engine
+    Includes documentation and two tutorials
     

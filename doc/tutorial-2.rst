@@ -49,7 +49,7 @@ method of the actor. For example.
     
 Now the head sprite will be used.
 
-Let's add that to our code now. You can download the graphics here (TODO).
+Let's add that to our code now. You can download the graphics here (`zipfile`_).
 
 .. code-block:: python
     :linenos:
@@ -1382,10 +1382,25 @@ We want to add the animation to the screen whenever we destroy a rock. There is 
     engine.run(60)
 
 
+Conclusion
+----------
+
+This concludes the snake tutorial. We have the basics of a playable game and covered the main fundamental concepts. We covered the following classes - take a look at their detailed documentation.
+
+* :py:mod:`The Engine <engine>`
+* :py:mod:`Worlds <world>`
+* :py:mod:`Actors <actor>`
+* :py:mod:`Sprites <visual>`
+* :py:mod:`Sound <sound>`
+* :py:mod:`Fonts <visual>`
+* :py:mod:`Useful Blocks <usefulblocks>`
+
+Return to the :doc:`tutorial` page for more advanced tutorial topics.
+
 Resources
 ---------
 
-Here are the graphics, sounds and fonts needed for the game: TODO
+Here are the graphics, sounds and fonts needed for the game: `zipfile`_
 
 
 Credits
@@ -1396,4 +1411,6 @@ Credits
 * http://openfontlibrary.org/en/font/press-start-2p
 * http://openfontlibrary.org/en/font/medievalsharp
 
+
+.. _zipfile: _static/snake-tutorial.zip
 
