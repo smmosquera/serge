@@ -1,6 +1,7 @@
 """Useful blocks for sounds"""
 
 import math
+import random
 
 import serge.sound
 import serge.actor
@@ -23,10 +24,12 @@ class SoundTexture(serge.actor.Actor):
         super(SoundTexture, self).__init__(tag, name)
         #
         self.sounds = []
+        self.random_sounds = []
         self.listener = None
         self._master_volume = 1.0
         self._listener_required = False
         self.damping = damping
+        self._playing = False
         
     def setListener(self, listener):
         """Set the listener for the sounds
@@ -49,14 +52,29 @@ class SoundTexture(serge.actor.Actor):
         An ambient sound plays at the same volume no matter where the listener
         is. Ambient sounds still get paused with the other sounds.
         
+        :param sound: the serge sound object that should be played
+        
         """
         self.sounds.append(AmbientSound(sound))
+
+    def addRandomSound(self, sound, probability):
+        """Add a random sound to the texture
+        
+        A random sound plays with a likelihood of probability/second. 
+        
+        :param sound: the serge sound object that should be played
+        :param probability: the probability that the sound will play in a given second
+        
+        """
+        self.random_sounds.append(ProbabalisticSound(sound, probability))
 
     def addPositionalSound(self, sound):
         """Add a positional sound to the texture
         
         A position sound plays at one or more locations in space and its volume is dependent
         on the location of the listener.
+
+        :param sound: the sound object that should be played. It should inherit from AmbientSound
         
         """
         self.sounds.append(sound)
@@ -91,16 +109,19 @@ class SoundTexture(serge.actor.Actor):
         """
         for sound in self.getSounds():
             sound.play(loops)
+        self._playing = True
         
     def pause(self):
         """Pause the sounds"""
         for sound in self.getSounds():
             sound.pause() 
-               
+        self._playing = False
+                       
     def stop(self):
         """Stop the sounds"""
         for sound in self.getSounds():
             sound.stop() 
+        self._playing = False
             
     def updateActor(self, interval, world):
         """Update the actor"""
@@ -108,7 +129,7 @@ class SoundTexture(serge.actor.Actor):
         #
         # Update the volume of all sounds
         if self.listener:
-            for sound in self.getSounds():
+            for sound in self.sounds:
                 #
                 # Update the sound volume
                 current_volume = sound.get_volume()
@@ -124,8 +145,27 @@ class SoundTexture(serge.actor.Actor):
                 self.log.debug('Sound %s new volume is %s' % (sound, new_volume))
         elif self._listener_required:
             raise NoListener('A listener has not been set for this texture (%s)' % self.getNiceName())
-                    
+        #
+        # Play any random sounds
+        if self._playing:
+            for sound in self.random_sounds:
+                sound.try_to_play(interval)
 
+
+class ProbabalisticSound(serge.sound.SoundItem):
+    """A sound that plays with a certain probability"""
+
+    def __init__(self, sound, probability):
+        """Initialise the ProbabalisticSound"""
+        super(ProbabalisticSound, self).__init__(sound=sound)
+        self.probability = probability
+        
+    def try_to_play(self, interval):
+        """Try to play the sound"""
+        if random.random() < self.probability * interval/1000.0:
+            self.play()
+            
+            
 
 class AmbientSound(serge.sound.SoundItem):
     """A sound located everywhere in space"""

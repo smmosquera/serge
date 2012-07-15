@@ -301,7 +301,40 @@ class TestSoundTexture(unittest.TestCase):
             self.t.updateActor(0, None)
             self.assertEqual(1, x1.get_volume())        
             
-
+    def testCanUseRandomSounds(self):
+        """testCanUseRandomSounds: should be able to do random sounds"""
+        self.t.addRandomSound(self.s1, 0)
+        self.t.addRandomSound(self.s2, 1)
+        self.t.addRandomSound(self.s3, .5)        
+        #
+        # Should play according to the probability
+        self.t.play()
+        for x in range(1000):
+            self.t.updateActor(1000,None)
+        self.assertEqual(0, self.s1._played)
+        self.assertEqual(1000, self.s2._played)
+        self.assertTrue(100 < self.s3._played < 900)
+        
+    def testRandomSoundsObeyPauseAndStop(self):
+        """testRandomSoundsObeyPauseAndStop: using random sounds should still be able to use pause and play"""
+        self.t.addRandomSound(self.s2, 1)
+        #
+        self.t.play()
+        self.t.updateActor(1000,None)
+        self.assertEqual(1, self.s2._played)
+        #
+        self.t.pause()
+        self.t.updateActor(1000,None)
+        self.assertEqual(1, self.s2._played)
+        #
+        self.t.play()
+        self.t.updateActor(1000,None)
+        self.assertEqual(2, self.s2._played)
+        #
+        self.t.stop()
+        self.t.updateActor(1000,None)
+        self.assertEqual(2, self.s2._played)
+    
         
                
         
@@ -320,6 +353,7 @@ class DummySound(serge.sound.SoundItem):
         self.volume = 1.0
         self.playing = False
         self._sound = LowLevelSound()
+        self._played = 0
         
     def set_volume(self, volume):
         """Set our volume"""
@@ -332,6 +366,7 @@ class DummySound(serge.sound.SoundItem):
     def play(self, loops=0):
         """Play the sound"""
         self.playing = True
+        self._played += 1
         
     def pause(self):
         """Pause the sound"""

@@ -106,9 +106,17 @@ class Zone(geometry.Rectangle, common.Loggable):
             if actor in self._physics_objects:
                 self._physics_objects.remove(actor)
                 p = actor.getPhysical()
-                self.space.remove(p.body)
-                if p.shape:
-                    self.space.remove(p.shape)
+                #
+                # The try-catch here is probably not required but if the game
+                # is playing around with the physics space then it might
+                # remove something without alerting the zone so we catch it
+                # here.
+                try:
+                    self.space.remove(p.body)
+                    if p.shape:
+                        self.space.remove(p.shape)
+                except KeyError, err:
+                    self.log.error('Actor %s already removed from physics space' % actor.getNiceName())
                 
     def clearActors(self):
         """Remove all actors"""
