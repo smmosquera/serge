@@ -142,7 +142,6 @@ class SoundTexture(serge.actor.Actor):
                     new_volume = max(0.0, min(1.0, interval/1000.0*self.damping)*
                                     (target_volume - current_volume) + current_volume)*self._master_volume
                 sound.set_volume(new_volume)
-                self.log.debug('Sound %s new volume is %s' % (sound, new_volume))
         elif self._listener_required:
             raise NoListener('A listener has not been set for this texture (%s)' % self.getNiceName())
         #
