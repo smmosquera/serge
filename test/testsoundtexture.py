@@ -250,8 +250,60 @@ class TestSoundTexture(unittest.TestCase):
         self.t.updateActor(0, None)
         self.assertEqual(0.0, x1.get_volume())
         
+    def testCanUsePositionalSoundDamping(self):
+        """testCanUsePositionalSoundDamping: should be able to damp variations in sound change when doing positional"""
+        self.t = serge.blocks.sounds.SoundTexture('s', 's', damping=0.5)
+        x1 = serge.blocks.sounds.LocationalSound(self.s1, (100, 50), 50)
+        self.t.addPositionalSound(x1)
+        self.t.setListener(self.a1)
+        #
+        # Move to edge of listening range - should start at 0
+        self.a1.moveTo(100,100)
+        self.t.updateActor(100000, None)
+        self.assertEqual(0, x1.get_volume())        
+        #
+        # Immediately move to full volume position, but should not change because of damping
+        self.a1.moveTo(100,50)
+        self.t.updateActor(0, None)
+        self.assertEqual(0, x1.get_volume())        
+        #
+        # Now wait 1 second, should change by 50%
+        self.t.updateActor(1000, None)
+        self.assertEqual(0.5, x1.get_volume())        
+        #
+        # Now wait 1 second, should change by 50%
+        self.t.updateActor(1000, None)
+        self.assertEqual(0.75, x1.get_volume())        
+        #
+        # Now move out of range
+        self.a1.moveTo(100,100)
+        self.t.updateActor(0, None)
+        self.assertEqual(0.75, x1.get_volume())        
+        self.t.updateActor(100000, None)
+        self.assertEqual(0, x1.get_volume())        
+
+    def testCanUseRegionBased(self):
+        """testCanUseRegionBased: should be able to use a region for sounds"""
+        x1 = serge.blocks.sounds.RectangularRegionSound(self.s1, (51,41,23,33))
+        self.t.addPositionalSound(x1)
+        x = self.t.getSounds()
+        self.t.setListener(self.a1)
+        #
+        # Out of range is zero
+        for x, y in ((50,40), (50,40+35), (50+25,40+35), (50+25,40)):
+            self.a1.moveTo(x, y)         
+            self.t.updateActor(0, None)
+            self.assertEqual(0, x1.get_volume())        
+        #
+        # In range should be full volume
+        for x, y in ((51,41), (51,41+32), (51+21,41+32), (51+21,41)):
+            self.a1.moveTo(x, y)         
+            self.t.updateActor(0, None)
+            self.assertEqual(1, x1.get_volume())        
+            
+
         
-           
+               
         
 class LowLevelSound(object):
     """Mimics of pygame sound object"""

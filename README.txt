@@ -85,4 +85,6 @@ What's New
 0.4.1
     Fixed bug in MuteButton - would always mute music regardless of the flag setting
     Fixed bug in Sound - pause/unpause behaviour was not working properly for sounds (ok for music)
+    Added SoundTexture block to create sounds textures that depend on the location of actors etc
+    
     

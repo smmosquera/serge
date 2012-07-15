@@ -18,7 +18,7 @@ class SoundTexture(serge.actor.Actor):
     
     """
 
-    def __init__(self, tag, name):
+    def __init__(self, tag, name, damping=None):
         """Initialise the SoundTexture"""
         super(SoundTexture, self).__init__(tag, name)
         #
@@ -26,6 +26,7 @@ class SoundTexture(serge.actor.Actor):
         self.listener = None
         self._master_volume = 1.0
         self._listener_required = False
+        self.damping = damping
         
     def setListener(self, listener):
         """Set the listener for the sounds
@@ -108,8 +109,19 @@ class SoundTexture(serge.actor.Actor):
         # Update the volume of all sounds
         if self.listener:
             for sound in self.getSounds():
-                volume = sound.get_scaled_volume((self.listener.x, self.listener.y))
-                sound.set_volume(volume*self._master_volume)
+                #
+                # Update the sound volume
+                current_volume = sound.get_volume()
+                target_volume = sound.get_scaled_volume((self.listener.x, self.listener.y))
+                #
+                # Damp changes in the sound volume
+                if self.damping is None:
+                    new_volume = target_volume*self._master_volume
+                else:
+                    new_volume = max(0.0, min(1.0, interval/1000.0*self.damping)*
+                                    (target_volume - current_volume) + current_volume)*self._master_volume
+                sound.set_volume(new_volume)
+                self.log.debug('Sound %s new volume is %s' % (sound, new_volume))
         elif self._listener_required:
             raise NoListener('A listener has not been set for this texture (%s)' % self.getNiceName())
                     
@@ -161,6 +173,7 @@ class LocationalSounds(AmbientSound):
             total += max(0.0, 1.0-dist/self.dropoff)
         return min(1.0, total)
        
+       
 class ActorsWithTagSound(AmbientSound):
     """A series of sounds that are located on actors who are in the world and have a certain tag"""
     
@@ -179,4 +192,26 @@ class ActorsWithTagSound(AmbientSound):
             dist = math.sqrt((listener_position[0]-actor.x)**2 +(listener_position[1]-actor.y)**2)
             total += max(0.0, 1.0-dist/self.dropoff)
         return min(1.0, total)   
-            
+ 
+ 
+class RectangularRegionSound(AmbientSound):
+    """A sound that is located in a rectangular region
+    
+    Inside the region the volume is full and outside the region the volume is 
+    zero.
+    
+    """
+    
+    def __init__(self, sound, region):
+        """Initialise the sound"""
+        super(RectangularRegionSound, self).__init__(sound)
+        #
+        self.location = serge.geometry.Rectangle(*region)
+        
+    def get_scaled_volume(self, listener_position):
+        """Update the sound volume according to the listener position"""
+        p = serge.geometry.Point(*listener_position)
+        return 1.0 if p.isInside(self.location) else 0.0
+        
+         
+           
