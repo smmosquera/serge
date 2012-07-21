@@ -234,7 +234,7 @@ class SnapshotOnKey(Behaviour):
 class MoveTowardsPoint(Behaviour):
     """Move an actor towards a point"""
     
-    def __init__(self, point, x_speed=1, y_speed=1):
+    def __init__(self, point, x_speed=1, y_speed=1, remove_when_there=False):
         """Initialise the behaviour
         
         You can limit the directions that will be moved by setting
@@ -245,6 +245,7 @@ class MoveTowardsPoint(Behaviour):
         self._target = point
         self._x_speed = x_speed
         self._y_speed = y_speed
+        self._remove_when_there = remove_when_there
         
     def __call__(self, world, actor, interval):
         """Do the movement"""
@@ -261,6 +262,8 @@ class MoveTowardsPoint(Behaviour):
             actor.y -= min(abs(dy), self._y_speed)
         #
         if dx == dy == 0:
+            if self._remove_when_there:
+                world.scheduleActorRemoval(actor)
             return B_COMPLETED
 
 class SpringTowardsPoint(Behaviour):
