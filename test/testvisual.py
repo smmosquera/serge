@@ -1241,7 +1241,22 @@ class TestVisual(unittest.TestCase, VisualTester):
         self.assertEqual((0,0,0,255), r.getSurface().get_at((48, 57)))
         self.assertEqual((0,255,0,255), r.getSurface().get_at((45, 63)))
         self.assertEqual((0,0,0,255), r.getSurface().get_at((51, 72)))
-
+    
+    def testMultipleLineTextIsAsLongAsLongestList(self):
+        """testMultipleLineTextIsAsLongAsLongestList: for multiple lines should use longest line"""
+        s1 = serge.visual.Text('a', (0,255,0))
+        s2 = serge.visual.Text('a longer bit of text', (0,255,0))
+        s3 = serge.visual.Text('a\na longer bit of text', (0,255,0))
+        s4 = serge.visual.Text('a longer bit of text\na', (0,255,0))
+        s5 = serge.visual.Text('iii\nOO', (0,255,0))
+        s6 = serge.visual.Text('OO', (0,255,0))
+        #
+        self.assertEqual(s2.width, s3.width)
+        self.assertEqual(s2.width, s4.width)
+        self.assertTrue(s1.width < s3.width)
+        self.assertEqual(s5.width, s6.width)
+        
+    
     def testCanHandleEmptyText(self):
         """testCanHandleEmptyText: should be able to handle empty text"""
         s = serge.visual.Text('', (0,255,0))

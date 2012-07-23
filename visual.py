@@ -598,9 +598,9 @@ class Text(Drawing):
         lines = text.splitlines()
         #
         # Find out how wide to make our surface
-        max_length, long_line = max([(len(line), line) for line in lines])       
-        test_text = self.font.render(long_line, True, self.colour)
-        width = test_text.get_width()
+        width = 0
+        for line in lines:
+            width = max(self.font.size(line)[0], width)
         height = self.font.get_height()
         #
         # Now make a surface

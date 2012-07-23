@@ -88,4 +88,6 @@ What's New
     Added SoundTexture block to create sounds textures that depend on the location of actors etc
     Allowing converting alpha mode of sprites to drastically improve blitting
     Added profiler for collecting detailed timing from the engine
+    Fixed bug when rendering multiple lines of text. Longest line was not always recognized resulting in cutoff
+    
     
