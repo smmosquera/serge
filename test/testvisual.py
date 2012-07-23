@@ -935,7 +935,83 @@ class TestVisual(unittest.TestCase, VisualTester):
             times.append(time.time()-start)
         print 'Times for non/cached are %s' % times
         self.assertTrue(times[0] - times[1] > times[0]/5)
+    
+    ### Converting alpha mode ###
+      
+    def testCanSetConvertAlphaInRegister(self):
+        """testCanSetConvertAlphaInRegister: should be able to convert alpha during registration"""
+        r = serge.render.Renderer()
+        s = serge.visual.Register.registerItem('png', p('i2.png'), 4)
+        #
+        # Base performance
+        start = time.time()
+        for i in range(100):
+            s.renderTo(0, r.getSurface(), (0,0))
+        base_time = time.time() - start
+        #
+        # Enhanced performance
+        s = serge.visual.Register.registerItem('fast_png', p('i2.png'), 4, convert_alpha=True)
+        start = time.time()
+        for i in range(100):
+            s.renderTo(0, r.getSurface(), (0,0))
+        new_time = time.time() - start
+        #
+        # Should be at least twice as fast
+        self.assertTrue(new_time/base_time < 0.5, 'Not fast enough base %s, new %s, ratio %s. Should be 2x' 
+            % (base_time, new_time, new_time/base_time))
 
+    def testConvertAlphaWorksWithGetItem(self):
+        """testConvertAlphaWorksWithGetItem: convert alpha should be retained when getting an item"""
+        r = serge.render.Renderer()
+        serge.visual.Register.registerItem('png', p('i2.png'), 4)
+        s = serge.visual.Register.getItem('png')
+        #
+        # Base performance
+        start = time.time()
+        for i in range(100):
+            s.renderTo(0, r.getSurface(), (0,0))
+        base_time = time.time() - start
+        #
+        # Enhanced performance
+        serge.visual.Register.registerItem('fast_png', p('i2.png'), 4, convert_alpha=True)
+        s = serge.visual.Register.getItem('fast_png')
+        start = time.time()
+        for i in range(100):
+            s.renderTo(0, r.getSurface(), (0,0))
+        new_time = time.time() - start
+        #
+        # Should be at least twice as fast
+        self.assertTrue(new_time/base_time < 0.5, 'Not fast enough base %s, new %s, ratio %s. Should be 2x' 
+            % (base_time, new_time, new_time/base_time))
+        
+    def testConvertAlphaWorksWithSetSprite(self):
+        """testConvertAlphaWorksWithSetSprite: should retain convert alpha when setting the sprite by name"""
+        r = serge.render.Renderer()
+        serge.visual.Register.registerItem('png', p('i2.png'), 4)
+        serge.visual.Register.registerItem('fast_png', p('i2.png'), 4, convert_alpha=True)
+        a = serge.actor.Actor('a','a')
+        a.setSpriteName('png')
+        #
+        # Base performance
+        start = time.time()
+        for i in range(100):
+            a.visual.renderTo(0, r.getSurface(), (0,0))
+        base_time = time.time() - start
+        #
+        # Enhanced performance
+        a.setSpriteName('fast_png')
+        start = time.time()
+        for i in range(100):
+            a.visual.renderTo(0, r.getSurface(), (0,0))
+        new_time = time.time() - start
+        #
+        # Should be at least twice as fast
+        self.assertTrue(new_time/base_time < 0.5, 'Not fast enough base %s, new %s, ratio %s. Should be 2x' 
+            % (base_time, new_time, new_time/base_time))
+       
+    
+    ### Rotation ###
+    
     def testCanRotateCircle(self):
         """testCanRotateCircle: should be able to rotate a circle in a stable way"""
         r = serge.render.Renderer()

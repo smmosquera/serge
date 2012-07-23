@@ -26,12 +26,13 @@ class Store(registry.GeneralStore):
     """Stores sprites"""
     
     def _registerItem(self, name, path, w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True,
-            one_direction=False):
+            one_direction=False, convert_alpha=False):
         """Register a sprite"""
         #
         # Watch for special case h = -1 ... this is a multi cell
         if h == -1:
-            return self.registerFromFiles(name, path, w, framerate, running, rectangular, angle, zoom, loop, one_direction)
+            return self.registerFromFiles(name, path, w, framerate, 
+                running, rectangular, angle, zoom, loop, one_direction, convert_alpha)
         #
         # Reality heighteck
         if zoom <= 0.0:
@@ -47,15 +48,17 @@ class Store(registry.GeneralStore):
             except Exception, err:
                 raise BadSprite('Failed to load sprite from "%s": %s' % (path, err))
             #
-            s = self._registerImage(name, image, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction)
+            s = self._registerImage(name, image, w, h, framerate, 
+                running, rectangular, angle, zoom, loop, one_direction, convert_alpha)
         else:
             s = self.items[name] = None
         #
         # Remember the settings used to create the sprite
-        self.raw_items.append([name, path, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction])
+        self.raw_items.append([name, path, w, h, framerate, 
+            running, rectangular, angle, zoom, loop, one_direction, convert_alpha])
         return s
 
-    def _registerImage(self, name, image, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction):
+    def _registerImage(self, name, image, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction, convert_alpha):
         """Register an image"""
         #
         if zoom != 1.0:
@@ -70,7 +73,7 @@ class Store(registry.GeneralStore):
         s = Sprite()
         #
         try:
-            s.setImage(image, (width, height), framerate, running)
+            s.setImage(image, (width, height), framerate, running, convert_alpha=convert_alpha)
         except Exception, err:
             raise BadSprite('Failed to create sprite %s: %s' % (name, err))
         #
@@ -81,13 +84,14 @@ class Store(registry.GeneralStore):
         s.loop = loop
         s.one_direction = one_direction
         s.name = name
+        s.convert_alpha = convert_alpha
         #
         self.items[name] = s         
         #
         return s
     
     def registerFromFiles(self, name, path, number, framerate=0, running=False, rectangular=True, angle=0.0, 
-                            zoom=1.0, start=1, loop=True, one_direction=False):
+                            zoom=1.0, start=1, loop=True, one_direction=False, convert_alpha=False):
         """Register a multi cell sprite from a number of files
         
         The path should be a string with a single numerical substitution.
@@ -116,15 +120,18 @@ class Store(registry.GeneralStore):
             canvas.blit(image, ((i-1)*width, 0))
         #
         # Ok, now create as if normal
-        s = self._registerImage(name, canvas, number, 1, framerate, running, rectangular, angle, zoom, loop, one_direction)
+        s = self._registerImage(name, canvas, number, 1, framerate, 
+            running, rectangular, angle, zoom, loop, one_direction, convert_alpha)
         #
         # Special case of h = -1 to trigger logic in the registerItem method when we are recovering from
         # a serialize
-        self.raw_items.append([name, path, number, -1, framerate, running, rectangular, angle, zoom, loop, one_direction])
+        self.raw_items.append([name, path, number, -1, framerate, 
+            running, rectangular, angle, zoom, loop, one_direction, convert_alpha])
         #
         return s
 
-    def registerMultipleItems(self, names, path, w, h=1, rectangular=True, angle=0.0, zoom=1.0, one_direction=False):
+    def registerMultipleItems(self, names, path, w, h=1, rectangular=True, 
+            angle=0.0, zoom=1.0, one_direction=False, convert_alpha=False):
         """Register a number of sprites from a single image
         
         The image must be a horizontal row of sprites and you must provide
@@ -145,16 +152,17 @@ class Store(registry.GeneralStore):
         #
         # Now get the individual images out
         for idx, name in enumerate(names):
-            self._registerImage(name, temp.cells[idx], 1, 1, 0, False, rectangular, angle, zoom, False, one_direction)
+            self._registerImage(name, temp.cells[idx], 1, 1, 0, False, 
+                rectangular, angle, zoom, False, one_direction, convert_alpha)
         # Clean up
         self.removeItem('__TEMP__')
     
-    def registerItemsFromPattern(self, pattern, prefix='', w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True, one_direction=False):
+    def registerItemsFromPattern(self, pattern, prefix='', w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True, one_direction=False, convert_alpha=False):
         """Register all items matching a certain regular expression"""
         items = [item for item in os.listdir(self._resolveFilename('')) if re.match(pattern, item)]
         for item in items:
             self.registerItem('%s%s' % (prefix, os.path.splitext(item)[0]), 
-                item, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction)
+                item, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction, convert_alpha)
         
          
 Register = Store() # Legacy name
@@ -173,6 +181,7 @@ class Drawing(object):
         self.angle = 0.0
         self.horizontal_flip = False
         self.vertical_flip = False
+        self.convert_alpha = False
             
     def setScale(self, scale):
         """Set the scaling to a certain factor"""
@@ -336,7 +345,7 @@ class Sprite(Drawing):
     def getCopy(self):
         """Return a copy of this sprite"""
         new = self.__class__()
-        new.setImage(self.raw_image, (self.width, self.height), self.framerate, self.running, self.loop, self.one_direction)
+        new.setImage(self.raw_image, (self.width, self.height), self.framerate, self.running, self.loop, self.one_direction, self.convert_alpha)
         return new
 
     def setAlpha(self, alpha):
@@ -346,7 +355,7 @@ class Sprite(Drawing):
             self._setAlphaForSurface(cell, alpha)
         self._alpha = alpha
 
-    def setImage(self, image, (width, height), framerate=0, running=False, loop=True, one_direction=False):
+    def setImage(self, image, (width, height), framerate=0, running=False, loop=True, one_direction=False, convert_alpha=False):
         """Set the image of this sprite"""
         #
         # Store cells of the image for speed - use of the cache is determined by the
@@ -354,7 +363,8 @@ class Sprite(Drawing):
         self._cell_cache = {}
         #
         # Store raw image
-        self.raw_image = image
+        self.raw_image = image if not convert_alpha else image.convert_alpha()
+        #
         self.width = self.raw_width = width
         self.height = self.raw_height = height
         self.cx = self.raw_cx = width/2

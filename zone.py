@@ -5,6 +5,7 @@ import math
 import common 
 import serialize
 import geometry
+import profiler
 pymunk = common.pymunk
 
 class DuplicateActor(Exception): """An actor was already in the zone"""
@@ -67,7 +68,9 @@ class Zone(geometry.Rectangle, common.Loggable):
         # actors during this iteration
         for actor in list(self.actors):
             if actor.active:
+                profiler.PROFILER.start(actor, 'updateActor')
                 actor.updateActor(interval, world)
+                profiler.PROFILER.end()
         #
         # Do physics if we need to
         if self._physics_objects:

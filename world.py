@@ -6,6 +6,7 @@ import serialize
 import geometry
 import events 
 import actor
+import profiler
 
 class UnknownActor(Exception): """Could not find the actor"""
 class DuplicateActor(Exception): """The actor was already in the world"""
@@ -262,11 +263,13 @@ class World(common.Loggable, serialize.Serializable, common.EventAware):
         # Render all of the actors
         for actor in self._sorted_actors:
             if actor.active and actor.visible:
+                profiler.PROFILER.start(actor, 'renderActor')
                 try:
                     actor.renderTo(renderer, interval)
                 except Exception, err:
                     self.log.error('Failed rendering "%s" actor "%s": %s' % (actor.tag, actor, err))
                     raise
+                profiler.PROFILER.end()
         #
         self.processEvent((events.E_AFTER_RENDER, self))
 

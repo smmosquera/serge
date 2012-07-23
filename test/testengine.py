@@ -15,12 +15,14 @@ import serge.visual
 import serge.actor
 import serge.input
 import serge.blocks.utils
+import serge.profiler
 
 class TestEngine(unittest.TestCase, VisualTester):
     """Tests for the Engine"""
 
     def setUp(self):
         """Set up the tests"""
+        serge.profiler.PROFILER = serge.profiler.Profiler()
         self.e = serge.engine.Engine()
         
     def tearDown(self):
@@ -450,7 +452,89 @@ class TestEngine(unittest.TestCase, VisualTester):
         time.sleep(0.5)
         self.assertTrue(self._as)
         
-                    
+    ### Profiling ###
+    
+    def testCanTurnProfilingOn(self):
+        """testCanTurnProfilingOn: should be able to turn profiling on"""
+        self.e.profilingOn()
+        
+    def testProfilingOffHasNullProfiler(self):
+        """testProfilingOffHasNullProfiler: with profiling off engine has a null profiler"""
+        self.assertEqual(serge.profiler.NullProfiler, self.e.getProfiler().__class__)
+        
+    def testProfilingOnHasRealProfiler(self):
+        """testProfilingOnHasRealProfiler: with profiling on engine has a real profiler"""
+        self.e.profilingOn()
+        self.assertEqual(serge.profiler.Profiler, self.e.getProfiler().__class__)
+        
+    def testProfilerCatchesUpdateActor(self):
+        """testProfilerCatchesUpdateActor: update actor statistics are collected by the engine"""
+        self.e.profilingOn()
+        w = serge.world.World('test')
+        self.e.addWorld(w)
+        z = serge.zone.Zone()
+        z.active = True
+        w.addZone(z)
+        a = serge.actor.Actor('act1', 'a')
+        b = serge.actor.Actor('act1', 'b')
+        c = serge.actor.Actor('act2', 'c')
+        #
+        w.addActor(a)
+        w.addActor(b)
+        w.addActor(c)
+        #
+        w.updateWorld(0)
+        #
+        p = self.e.getProfiler()
+        self.assertEqual(set(['a', 'b', 'c']), set(p.getNames()))
+        self.assertEqual(set(['act1', 'act2']), set(p.getTags()))
+        self.assertEqual(1, p.byName('a')['updateActor'][0])
+        self.assertTrue(p.byName('a')['updateActor'][1] > 0.0)
+        self.assertEqual(1, p.byName('b')['updateActor'][0])
+        self.assertTrue(p.byName('b')['updateActor'][1] > 0.0)
+        self.assertEqual(1, p.byName('c')['updateActor'][0])
+        self.assertTrue(p.byName('c')['updateActor'][1] > 0.0)
+        #
+        self.assertEqual(2, p.byTag('act1')['updateActor'][0])
+        self.assertTrue(p.byTag('act1')['updateActor'][1] > 0.0)
+        self.assertEqual(1, p.byTag('act2')['updateActor'][0])
+        self.assertTrue(p.byTag('act2')['updateActor'][1] > 0.0)
+        
+    def testProfilerCatchesRenderActor(self):
+        """testProfilerCatchesRenderActor: render actor statistic are collected by the engine"""
+        self.e.profilingOn()
+        w = serge.world.World('test')
+        self.e.addWorld(w)
+        z = serge.zone.Zone()
+        z.active = True
+        w.addZone(z)
+        a = serge.actor.Actor('act1', 'a')
+        b = serge.actor.Actor('act1', 'b')
+        c = serge.actor.Actor('act2', 'c')
+        #
+        w.addActor(a)
+        w.addActor(b)
+        w.addActor(c)
+        #
+        w.updateWorld(0)
+        w.renderTo(self.e.getRenderer(), 0)
+        #
+        p = self.e.getProfiler()
+        self.assertEqual(set(['a', 'b', 'c']), set(p.getNames()))
+        self.assertEqual(set(['act1', 'act2']), set(p.getTags()))
+        self.assertEqual(1, p.byName('a')['renderActor'][0])
+        self.assertTrue(p.byName('a')['renderActor'][1] > 0.0)
+        self.assertEqual(1, p.byName('b')['renderActor'][0])
+        self.assertTrue(p.byName('b')['renderActor'][1] > 0.0)
+        self.assertEqual(1, p.byName('c')['renderActor'][0])
+        self.assertTrue(p.byName('c')['renderActor'][1] > 0.0)
+        #
+        self.assertEqual(2, p.byTag('act1')['renderActor'][0])
+        self.assertTrue(p.byTag('act1')['renderActor'][1] > 0.0)
+        self.assertEqual(1, p.byTag('act2')['renderActor'][0])
+        self.assertTrue(p.byTag('act2')['renderActor'][1] > 0.0)
+        
+                        
         
 class TestWorld(serge.world.World):
     def __init__(self, name, maxreps=1000):

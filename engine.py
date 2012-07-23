@@ -10,6 +10,7 @@ import threading
 import input
 import sound
 import events
+import profiler
 
 class WorldNotFound(Exception): """The world was not in the worlds collection"""
 class DuplicateWorld(Exception): """The world already exists in the worlds collection"""
@@ -60,6 +61,7 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         self._mouse = input.Mouse(self)
         self._stats = EngineStats()
         self._recent_worlds = []
+        self._profiler = profiler.NullProfiler()
                     
     def init(self):
         """Initialise ourself"""
@@ -336,7 +338,16 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
         to_do = [((event, self._mouse), actor) for event, actor in events]
         self._current_world.processEvents(to_do)
 
-
+    ### Profiling ###
+    
+    def profilingOn(self):
+        """Turn the profiling on"""
+        self._profiler = profiler.PROFILER
+        
+    def getProfiler(self):
+        """Return the current profiler"""
+        return self._profiler
+        
 
 class EngineStats(object):
     """Statistic for the engine"""
