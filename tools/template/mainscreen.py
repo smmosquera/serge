@@ -32,6 +32,11 @@ class MainScreen(serge.blocks.actors.ScreenActor):
     def addedToWorld(self, world):
         """Added to the world"""
         super(MainScreen, self).addedToWorld(world)
+        #
+        # Cheating
+        if self.options.cheat:
+            fps = serge.blocks.utils.addActorToWorld(world,
+                serge.blocks.actors.FPSDisplay(G('fps-x'), G('fps-y'), G('fps-colour'), G('fps-size')))
 
     def updateActor(self, interval, world):
         """Update this actor"""

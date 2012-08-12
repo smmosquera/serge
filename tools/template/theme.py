@@ -18,6 +18,12 @@ theme.load({
     'mute-button-position' : (30, 30),
     'pre-stop-pause' : 0.5,
     
+    # FPS display
+    'fps-x' : 50,
+    'fps-y' : %(height)d-30,
+    'fps-colour' : (255, 255, 0),
+    'fps-size' : 12,
+    
     }),
     
     'start-screen' : ('main', {
@@ -105,6 +111,10 @@ theme.load({
         'engine-colour' : (255, 255, 0),
         'engine-font-size' : 16,
         'engine-position' : (%(width)d/4, 500),
+        # Engine version
+        'engine-version-colour' : (75, 75, 0),
+        'engine-version-font-size' : 10,
+        'engine-version-position' : (%(width)d/4, 520),
         # Fonts
         'font-title1-colour' : (0, 220, 220),
         'font-title1-font-size' : 20,

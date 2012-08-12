@@ -89,5 +89,9 @@ What's New
     Allowing converting alpha mode of sprites to drastically improve blitting
     Added profiler for collecting detailed timing from the engine
     Fixed bug when rendering multiple lines of text. Longest line was not always recognized resulting in cutoff
+    Added FPS display to template game
+    Added -S option to template game to go straight to the main screen, bypassing the start screen
+    Added engine version number to credits screen on template game
+    
     
     

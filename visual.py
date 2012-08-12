@@ -540,7 +540,7 @@ class Sprite(Drawing):
                 # Going in both directions, map onto twice the cell space (0 reflects back so
                 # use an absolute). We hit the end if we have an odd number
                 # of multiples of the number of cells
-                rn = n % (2*(nc-1))
+                rn = 0 if nc == 1 else n % (2*(nc-1))
                 if rn < 0:
                     rn = abs(rn)
                     hit_end = ((rn // nc) % 2 == 0)

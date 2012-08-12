@@ -72,7 +72,7 @@ def startEngine(options):
     serge.blocks.utils.createVirtualLayersForEngine(engine, ['background', 'foreground', 'main', 'ui'])
     serge.blocks.utils.createWorldsForEngine(engine, ['start-screen', 'main-screen', 'credits-screen', 'help-screen'])
     #
-    engine.setCurrentWorldByName('start-screen')
+    engine.setCurrentWorldByName('start-screen' if not options.straight else 'main-screen')
     return engine
 
 def stoppingNow(obj, arg):

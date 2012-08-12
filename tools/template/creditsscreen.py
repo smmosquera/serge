@@ -68,6 +68,7 @@ class CreditsScreen(serge.blocks.actors.ScreenActor):
                     (BUILT_USING, 'built'),
                     ('Game engine', 'engine-title'),
                     (GAME_ENGINE, 'engine'),  
+                    ('(v' + serge.common.version + ')', 'engine-version'),
                     ('Fonts', 'font-title1'),
                     ('from the OpenFontLibrary.org', 'font-title2'), 
                     ('Back', 'back', serge.blocks.utils.backToPreviousWorld('click')),                 

@@ -27,6 +27,8 @@ parser.add_option("-c", "--cheat", dest="cheat", default=False, action="store_tr
                   help="run in cheat mode - all levels are available right away")
 parser.add_option("-m", "--music-off", dest="musicoff", default=False, action="store_true",
                   help="start with music silenced")
+parser.add_option("-S", "--straight", dest="straight", default=False, action="store_true",
+                  help="go straight into game, bypassing start screen")
 parser.add_option("-s", "--screenshot", dest="screenshot", default=False, action="store_true",
                   help="allow screenshots of the screen by pressing 's' during gameplay")
 parser.add_option("-t", "--theme", dest="theme", default='', type='str',
