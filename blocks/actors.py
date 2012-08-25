@@ -547,4 +547,36 @@ class FocusManager(serge.actor.CompositeActor):
                             children[-1].getFocus()
                         else:
                             children[pos-1].getFocus()
-                            
+ 
+ 
+class SimplePhysicsActor(serge.actor.Actor):
+    """An actor that obeys simple physics of motion and rotation"""
+
+    def __init__(self, name, tag, velocity, angular_velocity, bounds=None):
+        """Initialise the SimplePhysicsActor"""
+        super(SimplePhysicsActor, self).__init__(name, tag)
+        self.velocity = velocity
+        self.angular_velocity = angular_velocity
+        self.bounds = bounds
+        
+    def updateActor(self, interval, world):
+        """Update the actor"""
+        super(SimplePhysicsActor, self).updateActor(interval, world)
+        #
+        # Linear equation of motion
+        dx, dy = interval/1000.0 * self.velocity
+        self.move(dx, dy)
+        #
+        # Angular equation of motion
+        da = interval/1000.0 * self.angular_velocity
+        self.setAngle(self.getAngle() + da)
+        #
+        # Check for in bounds
+        if self.bounds:
+            (minx, maxx), (miny, maxy) = self.bounds
+            if not ((minx <= self.x <= maxx) and (miny <= self.y <= maxy)):
+                self.log.debug('Removing physics actor %s - out of bounds' % self.getNiceName())
+                world.scheduleActorRemoval(self)
+
+
+                          

@@ -18,6 +18,7 @@ import serge.blocks.actors
 import serge.blocks.utils
 import serge.blocks.directions
 
+from serge.simplevecs import Vec2d
 
 class TestActorBlocks(unittest.TestCase, VisualTester):
     """Tests for the ActorBlocks"""
@@ -28,6 +29,8 @@ class TestActorBlocks(unittest.TestCase, VisualTester):
         self.w = serge.world.World('test')
         self.r = serge.render.Renderer()        
         self.r.addLayer(serge.render.Layer('a', 0))
+        self.z = serge.zone.Zone()
+        self.z.active = True
                 
         
     def tearDown(self):
@@ -285,6 +288,46 @@ class TestActorBlocks(unittest.TestCase, VisualTester):
         self.checkPoint((0,255,0,255), self.r.getSurface(), (100, 25), 'one')
         self.checkPoint((255,0,0,255), self.r.getSurface(), (100, 175), 'two')        
         
-            
+    ### Physics actors ###  
+    
+    def testCanCreatePhysicsActor(self):
+        """testCanCreatePhysicsActor: should be able to create a physics actor"""
+        a = serge.blocks.actors.SimplePhysicsActor('a', 'a', Vec2d(0,0), 0)
+        
+    def testPhysicsActorVelocity(self):
+        """testPhysicsActorVelocity: physics actor moves with velocity"""
+        a = serge.blocks.actors.SimplePhysicsActor('a', 'a', Vec2d(1,2), 0)
+        a.moveTo(0,0)
+        #
+        a.updateActor(1000, None)
+        self.assertEqual((1,2), (a.x, a.y))
+        
+    def testPhysicsActorRotates(self):
+        """testPhysicsActorRotates: physics actos should be able to rotate"""
+        a = serge.blocks.actors.SimplePhysicsActor('a', 'a', Vec2d(1,2), 10)
+        a.moveTo(0,0)
+        a.setAngle(0)
+        #
+        a.updateActor(1000, None)
+        self.assertEqual(10, a.getAngle())
+        
+    def testPhysicsActorBounds(self):
+        """testPhysicsActorBounds: should be able to check bounds for physics actor"""
+        a = serge.blocks.actors.SimplePhysicsActor('a', 'a', Vec2d(1,2), 10, bounds=((-10, 10), (-100, 100)))
+        self.w.addZone(self.z)
+        self.w.addActor(a)
+        self.assertEqual(True, self.w.hasActor(a))
+        #
+        # Allow to move
+        self.w.updateWorld(9000)
+        self.assertEqual(True, self.w.hasActor(a))
+        #
+        # Move so actor would be out of bounds
+        self.w.updateWorld(2000)
+        self.assertEqual(False, self.w.hasActor(a))
+                
+       
+    
+               
 if __name__ == '__main__':
     unittest.main()
