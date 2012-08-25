@@ -14,7 +14,7 @@ class PolygonVisual(serge.visual.Drawing):
         self.closed = closed
         self.colour = colour
         self.line_width = width
-        self.base_points = points
+        #self.base_points = points
         #
         # Find a suitable size
         x, y = zip(*points)
@@ -22,15 +22,17 @@ class PolygonVisual(serge.visual.Drawing):
         # Shift points so 
         mnx, mxx = min(x), max(x)
         mny, mxy = min(y), max(y)
-        cx, cy = (mxx-mnx)/2, (mxy-mny)/2
+        cx, cy = (mxx-mnx)/2+mnx, (mxy-mny)/2+mny
         x = [xi-cx for xi in x]
         y = [yi-cy for yi in y]
         #
-        self.setPoints(zip(x, y))
+        self.base_points = zip(x, y)
         #
         # Get dimensions
-        self.width = max(x)+self.line_width
-        self.height = max(y)+self.line_width
+        self.width = max(x)-min(x)+self.line_width
+        self.height = max(y)-min(y)+self.line_width
+        #
+        self.setAngle(0.0)
 
     def setPoints(self, points):
         """Set the points for the polygon"""
@@ -49,16 +51,7 @@ class PolygonVisual(serge.visual.Drawing):
             nx, ny = v
             ret.append((nx, ny))
         #
-        # Recenter
-        x, y = zip(*ret)
-        #
-        # Shift points so there are no negatives
-        #mx = min(x)
-        #my = min(y)
-        #x = [xi-mx for xi in x]
-        #y = [yi-my for yi in y]
-        #
-        return zip(x, y)
+        return ret
         
     def setAngle(self, angle):
         """Set the angle of the graphic"""
