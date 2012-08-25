@@ -18,6 +18,8 @@ class TestPolygons(unittest.TestCase, VisualTester):
         """Set up the tests"""
         self.r = serge.render.Renderer()
         self.sp = [(0,0), (20, 0), (20, 20), (0, 20), (0, 0)]
+        self.np = [(-10,-10), (10, -10), (10, 10), (-10, 10), (-10, -10)]
+        self.rp = [(0,0), (20, 0), (20, 10), (0, 10), (0, 0)]
         self.w = (255, 255, 255, 255)
         self.r2 = math.sqrt(2)
         
@@ -39,13 +41,31 @@ class TestPolygons(unittest.TestCase, VisualTester):
         s = self.r.getSurface()
         v = serge.blocks.polygons.PolygonVisual(self.sp, self.w)
         v.renderTo(0, s, (0, 0))
+        self.assertEqual(self.w, s.get_at((0,0)))
+        self.assertEqual(self.w, s.get_at((20,20)))
+        self.assertEqual((0,0,0,255), s.get_at((10,10)))
+        
+    def testRenderPolygonNegativeNumbers(self):
+        """testRenderPolygonNegativeNumbers: should be able to render a polygon where the points include negatives"""
+        s = self.r.getSurface()
+        v = serge.blocks.polygons.PolygonVisual(self.np, self.w)
+        v.renderTo(0, s, (0, 0))
         self.save(s, 1)
         self.assertEqual(self.w, s.get_at((0,0)))
         self.assertEqual(self.w, s.get_at((20,20)))
         self.assertEqual((0,0,0,255), s.get_at((10,10)))
         
-        
-      
+    def testCanGetRotatedPoints(self):
+        """testCanGetRotatedPoints: should be able to get the rotated points"""
+        v = serge.blocks.polygons.PolygonVisual(self.rp, self.w)
+        v.setAngle(90)
+        p = [(int(xi), int(yi)) for xi, yi in v.getPoints()]
+        self.assertEqual([(0, 20), (0, 0), (10, 0), (10, 20), (0, 20)], p)
+        v.setAngle(0)
+        p = [(int(xi), int(yi)) for xi, yi in v.getPoints()]
+        self.assertEqual([(0,0), (20, 0), (20, 10), (0, 10), (0, 0)], p)
+                
+         
 
 if __name__ == '__main__':
     unittest.main()
