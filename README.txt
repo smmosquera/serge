@@ -92,6 +92,9 @@ What's New
     Added FPS display to template game
     Added -S option to template game to go straight to the main screen, bypassing the start screen
     Added engine version number to credits screen on template game
+0.4.2
+    Added SimplePhysicsActor to blocks
+    Added PolygonVisual as a visual element to handle polygon shapes
     
     
     

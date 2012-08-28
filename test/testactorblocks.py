@@ -326,7 +326,7 @@ class TestActorBlocks(unittest.TestCase, VisualTester):
         self.w.updateWorld(2000)
         self.assertEqual(False, self.w.hasActor(a))
                 
-       
+           
     
                
 if __name__ == '__main__':

@@ -72,6 +72,22 @@ Building Blocks
     :members:
     :undoc-members:
     :show-inheritance:
+    
+:mod:`lsystem` Module
+--------------------
+
+.. automodule:: serge.blocks.lsystem
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
+:mod:`polygons` Module
+--------------------
+
+.. automodule:: serge.blocks.polygons
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 :mod:`scores` Module
 --------------------
