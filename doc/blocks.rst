@@ -97,6 +97,14 @@ Building Blocks
     :undoc-members:
     :show-inheritance:
 
+:mod:`settings` Module
+--------------------
+
+.. automodule:: serge.blocks.settings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
 :mod:`sounds` Module
 ------------------------
 
