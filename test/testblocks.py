@@ -1350,6 +1350,12 @@ class TestSettingsBlock(unittest.TestCase):
         self.assertEqual(123, s.values.a)
         self.assertEqual([1,2,3], s.values.b)
         self.assertEqual('hello', s.values.c)
+
+    def testCanDoASafeRestore(self):
+        """testCanDoASafeRestore: should be able to restore a blank set of settings if no file is there"""
+        s = serge.blocks.settings.Settings('game_not_there')        
+        s.setLocation('/home/paul/workspace/git/serge/test/files')
+        s.safeRestoreValues()
         
     def testCanSetDefaultValues(self):
         """testCanSetDefaultValues: should be able to set default values"""

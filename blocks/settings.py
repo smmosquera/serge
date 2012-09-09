@@ -64,5 +64,11 @@ class Settings(serge.common.Loggable):
             self.values = cPickle.load(f)
             self.values.init(self.defaults)
     
+    def safeRestoreValues(self):
+        """Restore values if the file is there. If not just restore a blank set"""
+        try:
+            self.restoreValues()
+        except (OSError, IOError):
+            self.values = Bag()
+            self.values.init(self.defaults)
 
-        
