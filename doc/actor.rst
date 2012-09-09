@@ -25,6 +25,15 @@ CompositeActor
     :members:
 
 
+AbstractMountableActor
+--------------
+
+.. inheritance-diagram:: serge.actor.AbstractMountableActor
+    
+.. autoclass:: serge.actor.AbstractMountableActor
+    :show-inheritance:
+    :members:
+    
 MountableActor
 --------------
 

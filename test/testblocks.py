@@ -19,6 +19,7 @@ import serge.blocks.actors
 import serge.blocks.utils
 import serge.blocks.directions
 import serge.blocks.achievements
+import serge.blocks.settings
 
 import serge.render
 import serge.actor
@@ -1308,7 +1309,89 @@ class TestScoreBlocks(unittest.TestCase):
         # Adding a higher one should be
         self.assertEqual(1, t.addScore('test', 'bob', 10))
                       
-       
+
+class TestSettingsBlock(unittest.TestCase):
+    """Tests for the SettingsBlock"""
+
+    def setUp(self):
+        """Set up the tests"""
+        self.s = serge.blocks.settings.Settings('game')
+        
+    def tearDown(self):
+        """Tear down the tests"""     
+
+    def testCanSetDefaultLocation(self):
+        """testCanSetDefaultLocation: should be able to set the locaiton of settings to defaults"""
+        self.assertEqual(os.path.abspath('/home/paul'), self.s.getLocation())
+        
+    def testCanSetSpecificLocation(self):
+        """testCanSetSpecificLocation: should be able to set a specific location"""
+        self.s.setLocation('/etc')
+        self.assertEqual('/etc', self.s.getLocation())
+        
+    def testCanStoreValues(self):
+        """testCanStoreValues: should be able to store values"""
+        self.s.values.a = 123
+        self.s.values.b = [1,2,3]
+        self.s.values.c = 'hello'
+        
+    def testCanRestoreValues(self):
+        """testCanRestoreValues: should be able to restore values"""
+        self.s.setLocation('/home/paul/workspace/git/serge/test/files')
+        self.s.values.a = 123
+        self.s.values.b = [1,2,3]
+        self.s.values.c = 'hello'
+        self.s.saveValues()
+        #
+        s = serge.blocks.settings.Settings('game')        
+        s.setLocation('/home/paul/workspace/git/serge/test/files')
+        s.restoreValues()
+        #
+        self.assertEqual(123, s.values.a)
+        self.assertEqual([1,2,3], s.values.b)
+        self.assertEqual('hello', s.values.c)
+        
+    def testCanSetDefaultValues(self):
+        """testCanSetDefaultValues: should be able to set default values"""
+        self.s.setLocation('/home/paul/workspace/git/serge/test/files')
+        self.s.values.a = 123
+        self.s.values.b = [1,2,3]
+        self.s.values.c = 'hello'
+        self.s.saveValues()
+        #
+        s = serge.blocks.settings.Settings('game')        
+        s.setLocation('/home/paul/workspace/git/serge/test/files')
+        s.defaults.a = 4321
+        s.defaults.d = 1010
+        s.restoreValues()
+        #
+        self.assertEqual(123, s.values.a)
+        self.assertEqual([1,2,3], s.values.b)
+        self.assertEqual('hello', s.values.c)
+        self.assertEqual(1010, s.values.d)
+        #
+        s.defaults.d = 2020
+        self.assertEqual(2020, s.values.d)
+        #
+        s.values.d = 3030
+        self.assertEqual(3030, s.values.d)
+        
+    def testDefaultsAreNotSaved(self):
+        """testDefaultsAreNotSaved: default values should not be saved"""
+        self.s.setLocation('/home/paul/workspace/git/serge/test/files')
+        self.s.defaults.a = 123
+        self.s.saveValues()
+        #
+        s = serge.blocks.settings.Settings('game')        
+        s.setLocation('/home/paul/workspace/git/serge/test/files')
+        s.defaults.a = 4321
+        s.restoreValues()
+        #
+        self.assertEqual(4321, s.defaults.a)
+        self.assertEqual(4321, s.values.a)
+                        
+          
+               
 class TestThemeBlocks(unittest.TestCase):
     """Tests for the ThemeBlocks"""
 

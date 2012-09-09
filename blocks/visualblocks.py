@@ -221,7 +221,12 @@ class ProgressBar(serge.visual.SurfaceDrawing):
     use to show progress or represent the number of cetain items.
     The bar can be a single colour or can change colour within
     certain ranges.
+    
+    Use the **value** property to set the current value of the bar.
         
+    :param size: (w, h) the size of the bar
+    :param value_ranges: [(low, high, colour), ...] list of coloured ranges
+    
     """
 
     def __init__(self, size, value_ranges, border_width=0, border_colour=(255,255,255,255)):

@@ -74,7 +74,7 @@ Building Blocks
     :show-inheritance:
     
 :mod:`lsystem` Module
---------------------
+---------------------
 
 .. automodule:: serge.blocks.lsystem
     :members:
@@ -82,7 +82,7 @@ Building Blocks
     :show-inheritance:
     
 :mod:`polygons` Module
---------------------
+----------------------
 
 .. automodule:: serge.blocks.polygons
     :members:
