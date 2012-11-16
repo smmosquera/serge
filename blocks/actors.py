@@ -447,24 +447,13 @@ class TextEntryWidget(serge.actor.MountableActor):
             self.cursor.moveTo(self.text.x + position + self.cursor.width/2, self.text.y)
             self.cursor.active = self.hasFocus()
 
-    def _backspace(self):
-        """Do a backspace"""
-        if self.cursor_pos > 0: 
-            self.text.value = self.text.value[0:self.cursor_pos-1] + self.text.value[self.cursor_pos:]
-            self.cursor_pos = max(0, self.cursor_pos-1)
-
-    def _delete(self):
-        """Do a delete"""
-        if self.cursor_pos < len(self.text.value): 
-            self.text.value = self.text.value[0:self.cursor_pos] + self.text.value[self.cursor_pos+1:]
-
     def getText(self):
         """Return the text value"""
         return self.text.value
         
     def setText(self, text):
         """Set the text value"""
-        self.text.value = text
+        self.text.value = str(text)
 
     def getFocus(self):
         """Get the focus"""
@@ -479,6 +468,17 @@ class TextEntryWidget(serge.actor.MountableActor):
         """Return True if we have focus"""
         return self.has_focus
         
+    def _backspace(self):
+        """Do a backspace"""
+        if self.cursor_pos > 0: 
+            self.text.value = self.text.value[0:self.cursor_pos-1] + self.text.value[self.cursor_pos:]
+            self.cursor_pos = max(0, self.cursor_pos-1)
+
+    def _delete(self):
+        """Do a delete"""
+        if self.cursor_pos < len(self.text.value): 
+            self.text.value = self.text.value[0:self.cursor_pos] + self.text.value[self.cursor_pos+1:]
+
         
 class FocusManager(serge.actor.CompositeActor):
     """Manages focus between a number of entry widgets"""

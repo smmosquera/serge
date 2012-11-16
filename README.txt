@@ -95,6 +95,7 @@ What's New
 0.4.2
     Added SimplePhysicsActor to blocks
     Added PolygonVisual as a visual element to handle polygon shapes
-    
-    
-    
+    Documented fysom finite state machine block
+    Renderer can now return rendering order of its layers
+    Mouse events now fire in the order of topmost layer first
+    Backwards incompatibility: Static layers no longer fire first in the event order. Use layer orders instead.

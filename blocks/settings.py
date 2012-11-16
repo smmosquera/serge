@@ -55,12 +55,12 @@ class Settings(serge.common.Loggable):
         
     def saveValues(self):
         """Serialize all the values to a file"""
-        with file(os.path.join(self.getLocation(), '%s.%s' % (self.name, '.settings')), 'w') as f:
+        with file(os.path.join(self.getLocation(), '%s.%s' % (self.name, 'settings')), 'w') as f:
             cPickle.dump(self.values, f)
             
     def restoreValues(self):
         """Restore all the values from a file"""
-        with file(os.path.join(self.getLocation(), '%s.%s' % (self.name, '.settings')), 'r') as f:
+        with file(os.path.join(self.getLocation(), '%s.%s' % (self.name, 'settings')), 'r') as f:
             self.values = cPickle.load(f)
             self.values.init(self.defaults)
     

@@ -87,8 +87,52 @@ class TestRender(unittest.TestCase, VisualTester):
         """testFailIfGetByMissingName: should fail if try to get missing layer"""
         self.assertRaises(serge.render.UnknownLayer, self.r.getLayer, 'one')
         
-            
-
+    def testCanGetRenderOrder(self):
+        """testCanGetRenderOrder: should be able to retrieve rendering order by name"""
+        self.r.addLayer(self.l1)
+        self.r.addLayer(self.l2)
+        self.r.addLayer(self.l3)
+        #
+        self.assertEqual(0, self.r.getRenderingOrder(self.l1))
+        self.assertEqual(1, self.r.getRenderingOrder(self.l2))
+        self.assertEqual(2, self.r.getRenderingOrder(self.l3))
+ 
+    def testFailGetRenderOrderMissing(self):
+        """testFailGetRenderOrderMissing: should raise an error if asking for the rendering order to a non-existent layer"""
+        self.assertRaises(serge.render.UnknownLayer, self.r.getRenderingOrder, 'NOTTHERE')
+        
+    def testCanGetRenderOrderDict(self):
+        """testCanGetRenderOrderDict: should be able to get a dictionary of layer name / render orders"""
+        self.r.addLayer(self.l1)
+        self.r.addLayer(self.l2)
+        self.r.addLayer(self.l3)
+        #
+        d = self.r.getRenderingOrderDictionary()
+        self.assertEqual(0, d[self.l1.name])
+        self.assertEqual(1, d[self.l2.name])
+        self.assertEqual(2, d[self.l3.name])
+        
+    def testRenderingOrderDictUpdates(self):
+        """testRenderingOrderDictUpdates: order dictionary should automatically update when layers are added or deleted"""
+        self.r.addLayer(self.l1)
+        self.r.addLayer(self.l2)
+        #
+        d = self.r.getRenderingOrderDictionary()
+        self.assertEqual(0, d[self.l1.name])
+        self.assertEqual(1, d[self.l2.name])
+        self.assertFalse(self.l3.name in d)
+        #
+        # Update adding layer
+        self.r.addLayer(self.l3)
+        self.assertEqual(2, d[self.l3.name])
+        #
+        # Removing layer
+        self.r.removeLayer(self.l1)
+        self.assertEqual(0, d[self.l2.name])
+        self.assertEqual(1, d[self.l3.name])
+        self.assertFalse(self.l1.name in d)
+        
+        
     ### Rendering order ###
     
     def testCanCallRendering(self):

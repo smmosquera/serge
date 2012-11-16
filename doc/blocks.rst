@@ -65,6 +65,14 @@ Building Blocks
     :undoc-members:
     :show-inheritance:
 
+:mod:`fysom` Module
+-------------------
+
+.. automodule:: serge.blocks.fysom
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
 :mod:`layout` Module
 --------------------
 
@@ -98,7 +106,7 @@ Building Blocks
     :show-inheritance:
 
 :mod:`settings` Module
---------------------
+----------------------
 
 .. automodule:: serge.blocks.settings
     :members:
@@ -106,7 +114,7 @@ Building Blocks
     :show-inheritance:
     
 :mod:`sounds` Module
-------------------------
+--------------------
 
 .. automodule:: serge.blocks.sounds
     :members:

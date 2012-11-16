@@ -265,7 +265,7 @@ class Mouse(object):
         """Return the pixel location relative to the screen and NOT camera"""
         return pymunk.Vec2d(*pygame.mouse.get_pos())/self.engine.getRenderer().getCamera().zoom
 
-    def getActorEvents(self, world, layers=None):
+    def getActorEvents(self, world, layers=None, layer_order=None):
         """Return the type of events for each actor that we have hit
         
         The optional parameter layers can be a list of layers that we are interested in. Only
@@ -291,12 +291,20 @@ class Mouse(object):
         if self.isClicked(M_WHEEL_DOWN):
             events.append('wheel-down-click')
         #
+        # Sorting and filtering of the events
+        if layer_order is None:
+            layer_order = {}
+        #
         all = []
         for actor in actors:
             if layers is None or actor.layer in layers:
                 for event in events:
-                    all.append((event, actor))
-        return all
+                    all.append((layer_order.get(actor.layer), (event, actor)))
+        #
+        all.sort()
+        all.reverse()
+        #
+        return [e for _, e in all]
 
     def getActorsUnderMouse(self, world):
         """Return all the actors that the mouse is over"""

@@ -61,7 +61,9 @@ class Renderer(common.Loggable, serialize.Serializable, common.EventAware):
         self.camera.resizeTo(self.width, self.height)
         if self.icon:
             pygame.display.set_icon(visual.Register.getItem(self.icon).raw_image)
-                
+        #
+        self._render_layer_dict = None
+        
     ### Layers ###
     
     def addLayer(self, layer):
@@ -73,6 +75,10 @@ class Renderer(common.Loggable, serialize.Serializable, common.EventAware):
             self.layers.append(layer)
         self._sort_needed = True
         self.resetSurfaces()
+        #
+        # Update the layer dictionary cache
+        self.getRenderingOrderDictionary()
+        #
         return layer
 
     def getLayer(self, name):
@@ -113,6 +119,9 @@ class Renderer(common.Loggable, serialize.Serializable, common.EventAware):
             self.layers.remove(layer)
         except ValueError:
             raise UnknownLayer('The layer %s was not found' % layer.getNiceName())
+        #
+        # Update the layer dictionary cache
+        self.getRenderingOrderDictionary()
 
     def removeLayerNamed(self, name):
         """Remove the layer with the specific name"""
@@ -143,6 +152,37 @@ class Renderer(common.Loggable, serialize.Serializable, common.EventAware):
         #
         return [actor for _, actor in actor_list]
 
+    def getRenderingOrder(self, layer):
+        """Return the order that a layer will be rendered in (0 = first)"""
+        try:
+            return self.layers.index(layer)
+        except ValueError:
+            raise UnknownLayer('The layer %s was not found' % layer)
+        
+    def getRenderingOrderDictionary(self):
+        """Return a dictionary of the rendering orders of each layer by name ({name:0, name:1} etc)
+        
+        The dictionary is actually a live copy that will be updated if you 
+        add layers to the renderer so it is safe for you to cache it and
+        re-use it.
+        
+        Changing the dictionary results in undefined behaviour.
+        
+        """
+        order = dict([(layer.name, idx) for idx, layer in enumerate(self.getLayers())])
+        if self._render_layer_dict is None:
+            #
+            # Set the dictionary
+            self._render_layer_dict = order
+        else:
+            #
+            # Clear and reset the cached copy of the dictionary
+            for k in self._render_layer_dict.keys():
+                del(self._render_layer_dict[k])
+            self._render_layer_dict.update(order)
+        #
+        return self._render_layer_dict
+    
     ### Rendering ###
 
     def clearSurface(self):

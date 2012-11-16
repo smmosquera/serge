@@ -37,8 +37,10 @@ class TestWorlds(unittest.TestCase):
         self.w2 = TestWorld('test2')
         #
         self.engine = serge.engine.Engine()
-        self.engine.getRenderer().addLayer(serge.render.Layer('one', 0))
-        self.engine.getRenderer().addLayer(serge.render.Layer('two', 0))
+        self.r = self.engine.getRenderer()
+        self.r.addLayer(serge.render.Layer('one', 0))
+        self.r.addLayer(serge.render.Layer('two', 1))
+        self.r.addLayer(serge.render.Layer('three', 2))
 
         
     def tearDown(self):
@@ -527,7 +529,43 @@ class TestWorlds(unittest.TestCase):
         events = mouse.getActorEvents(self.w, ['one', 'two'])
         self.assertEquals(set([(serge.events.E_LEFT_MOUSE_DOWN, self.a1), (serge.events.E_LEFT_MOUSE_DOWN, self.a2)]), set(events))
         
-       
+    def testEventsOrderByLayer(self):
+        """testEventsOrderByLayer: topmost events should fire first"""
+        self.a1.setSpatial(50, 100, 51, 30)
+        self.a2.setSpatial(100, 50, 20, 51)
+        self.b1.setSpatial(100, 50, 20, 51)
+        self.z2.addActor(self.b1)
+        self.w.addZone(self.z1)
+        self.w.addZone(self.z2) 
+        engine = self.engine
+        mouse = serge.input.Mouse(engine)
+        # Fake a click
+        mouse.current_mouse_state.setState(serge.input.M_LEFT, True)
+        mouse.getScreenPos = lambda : (x, y)
+        #
+        self.a1.layer = 'one'
+        self.a2.layer = 'two'
+        self.b1.layer = 'three'
+        #
+        layers = self.r.getRenderingOrderDictionary()
+        #
+        x, y = 100, 100
+        events = [(e, a.name) for e, a in mouse.getActorEvents(self.w, layer_order=layers)]
+        self.assertEquals( 
+            [(serge.events.E_LEFT_MOUSE_DOWN, 'b1'),
+             (serge.events.E_LEFT_MOUSE_DOWN, 'a2'),
+             (serge.events.E_LEFT_MOUSE_DOWN, 'a1')], events)
+        #
+        self.a1.layer = 'three'
+        self.b1.layer = 'one'
+        #
+        events = [(e, a.name) for e, a in mouse.getActorEvents(self.w, layer_order=layers)]
+        self.assertEquals( 
+            [(serge.events.E_LEFT_MOUSE_DOWN, 'a1'),
+             (serge.events.E_LEFT_MOUSE_DOWN, 'a2'),
+             (serge.events.E_LEFT_MOUSE_DOWN, 'b1')], events)
+            
+            
     ### Handling events ###
     
     def testCanHandleMouseClick(self):
@@ -710,48 +748,7 @@ class TestWorlds(unittest.TestCase):
         test = 0
         engine.processEvents()
         self.assertTrue(test in (1, 10))
-        
-    def testStaticZonedActorsAreHandledFirst(self):
-        """testStaticZonedActorsAreHandledFirst: should be able to specify an event handler as important by putting on static"""
-        # Here is the key to ordering the event listeners
-        self.engine.getRenderer().getLayer('two').setStatic(True)
-        #
-        self.a1.setSpatial(0, 0, 1000, 1000)
-        self.a2.setSpatial(0, 0, 1000, 1000)
-        self.w.addZone(self.z1)
-        self.w.addZone(self.z2)
-        engine = self.engine
-        mouse = serge.input.Mouse(engine)
-        # Fake a click
-        mouse.current_mouse_state.setState(serge.input.M_LEFT, True)
-        mouse.getScreenPos = lambda : (x, y)
-        #
-        self.a1.layer = 'one'
-        self.a2.layer = 'two'
-        x, y = 55, 100
-        #
-        global test, consume
-        test = 0
-        consume = True
-        def doit(obj, x):
-            global test
-            test += x
-            if consume:
-                return serge.events.E_LEFT_MOUSE_DOWN
-            else:
-                return None
-        #
-        # Link events - normally a2 would fire first being the last
-        # registered but since a2 is on a static layer now it will be the first
-        self.a1.linkEvent(serge.events.E_LEFT_MOUSE_DOWN, doit, 10)
-        self.a2.linkEvent(serge.events.E_LEFT_MOUSE_DOWN, doit, 1)
-        #
-        # First non consuming
-        engine.addWorld(self.w)
-        engine.setCurrentWorld(self.w)
-        engine._mouse = mouse
-        engine.processEvents()
-        self.assertEqual(1, test)        
+
 
 
     ### World Events ###

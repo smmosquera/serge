@@ -26,7 +26,7 @@ CompositeActor
 
 
 AbstractMountableActor
---------------
+----------------------
 
 .. inheritance-diagram:: serge.actor.AbstractMountableActor
     
