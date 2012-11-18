@@ -33,12 +33,17 @@ parser.add_option("-s", "--screenshot", dest="screenshot", default=False, action
                   help="allow screenshots of the screen by pressing 's' during gameplay")
 parser.add_option("-t", "--theme", dest="theme", default='', type='str',
                   help="settings (a=b,c=d) for the theme")
-                 
+parser.add_option("-D", "--drop", dest="drop", default=False, action="store_true",
+                  help="drop into debug mode on an unhandled error")
+                  
 (options, args) = parser.parse_args()
 serge.common.logger.setLevel(options.log)
 
 import game.main
 
+if options.drop:
+    serge.common.installDebugHook()
+    
 if options.profile:
     import cProfile, pstats
     cProfile.run('game.main.main(options, args)', 'profile')
