@@ -45,7 +45,12 @@ class TextGenerator(object):
         for line in text.splitlines():
             if line.strip() and not line.strip().startswith('#'):
                 self.addExampleFromText(line)
-            
+    
+    def addExamplesFromFile(self, filename):
+        """Add multiple examples from a file"""
+        text = file(filename, 'r').read()
+        self.addExamplesFromText(text)
+                
     def getRandomFormCompletion(self, name):
         """Return the comletion of a form randomly"""
         return random.choice(list(self.forms[name]))
