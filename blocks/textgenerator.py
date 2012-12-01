@@ -4,6 +4,9 @@
 import random
 import re
 
+class NameNotFound(Exception): """An expansion for the name was not found"""
+
+
 class TextGenerator(object):
     """Generate text from forms
     
@@ -17,6 +20,17 @@ class TextGenerator(object):
         
     Sentence 'the @object@' would give a "book" or a "red cat".
     
+    When looking up examples from text or files the form should be:
+    
+        type: example1
+        type: example2
+        
+    Or
+    
+        type {
+            example1
+            example2
+        }
     """
     
     def __init__(self):
@@ -68,7 +82,13 @@ class TextGenerator(object):
                 
     def getRandomFormCompletion(self, name):
         """Return the comletion of a form randomly"""
-        return random.choice(list(self.forms[name]))
+        try:
+            results = self.forms[name]
+        except KeyError:
+            # No name found
+            raise NameNotFound('The expansion @%s@ was not defined' % name)
+        else:
+            return random.choice(list(results))
         
     def getRandomSentence(self, text, properties=None):
         """Return a random sentence from the text"""
