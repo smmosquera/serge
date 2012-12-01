@@ -129,6 +129,14 @@ Building Blocks
     :undoc-members:
     :show-inheritance:
 
+:mod:`textgenerator` Module
+---------------------------
+
+.. automodule:: serge.blocks.textgenerator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
 :mod:`themes` Module
 --------------------
 

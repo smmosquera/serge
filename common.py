@@ -3,7 +3,7 @@ import traceback
 import logging
 import re
 
-version = '0.4.1.2'
+version = '0.4.1.3'
 
 #
 # Number of channels of audio - pygame default is 8 but
@@ -100,7 +100,7 @@ def getLogger(name):
     l.addFilter(filterer)
     if LOG_TO_FILE:
         l.addHandler(fhdlr)
-
+    l.propagate = False
     return l
 
 
