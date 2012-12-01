@@ -42,9 +42,24 @@ class TextGenerator(object):
     
     def addExamplesFromText(self, text):
         """Add a number of examples from text"""
-        for line in text.splitlines():
-            if line.strip() and not line.strip().startswith('#'):
-                self.addExampleFromText(line)
+        in_multiline = None
+        for idx, full_line in enumerate(text.splitlines()):
+            line = full_line.strip()
+            if line and not line.startswith('#'):
+                if line.endswith('{'):
+                    # Multiple lines follow - store the name
+                    parts = line.split(' ')
+                    if len(parts) != 2:
+                        raise ValueError('Need "<name> {" for multi-line (line %d:"%s")' % (idx, full_line))
+                    in_multiline = parts[0].strip()
+                elif line.endswith('}'):
+                    # Multiple lines end
+                    in_multiline = None
+                else:
+                    if not in_multiline:
+                        self.addExampleFromText(line)
+                    else:
+                        self.addExample(in_multiline, line)
     
     def addExamplesFromFile(self, filename):
         """Add multiple examples from a file"""

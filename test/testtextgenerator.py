@@ -33,6 +33,22 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
                         colourname: @colour@ @name@
                         cn: @colourname@
                     '''
+        self.e2 = '''
+                        colour {
+                        red
+                        blue
+                        green
+                        }
+                        name {
+                        bob
+                        fred
+                        }
+                        thing: this
+                        size: big
+                        size: small
+                        colourname: @colour@ @name@
+                        cn: @colourname@
+                  '''
                     
     def tearDown(self):
         """Tear down the tests"""
@@ -52,6 +68,14 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
         self.assertEqual('red', self.t.getRandomFormCompletion('colour'))
         self.assertEqual('bob', self.t.getRandomFormCompletion('name'))
         self.assertEqual('this', self.t.getRandomFormCompletion('thing'))
+
+    def testMultiExampleText(self):
+        """testMultiExampleText: should be able to use multiexamples in text"""
+        self.t.addExamplesFromText(self.e2)
+        s = self.t.getRandomSentence('@colour@ @name@')
+        a, b = s.split(' ')
+        self.assertEqual(True, a in ['red', 'blue', 'green'])
+        self.assertEqual(True, b in ['bob', 'fred'])
     
     def testSingleReplacement(self):
         """testSingleReplacement: should be able to do a single replacement"""
