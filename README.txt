@@ -101,3 +101,5 @@ What's New
     Backwards incompatibility: Static layers no longer fire first in the event order. Use layer orders instead.
     Added installDebugHook to serge.common. If you call this then the game will drop into pdb when an unhandled error occurs
     Added TextGenerator block to allow generation of randomized text
+    ToggledMenu now sets layer properly for menu items
+    

@@ -193,7 +193,23 @@ class TestActorBlocks(unittest.TestCase, VisualTester):
         self.save(self.r, 1)
         self.checkPoint((0,255,0,255), self.r.getSurface(), (100, 25), 'one')
         self.checkPoint((255,0,0,255), self.r.getSurface(), (100, 175), 'two')        
-        
+
+    def testCanClearSelection(self):
+        """testCanClearSelection: should be able to clear the selected item"""
+        menu = serge.blocks.actors.ToggledMenu('m', 'm', items=['one','two'],
+            layout=serge.blocks.layout.VerticalBar('m', 'm', width=200, height=200),
+            default='one', on_colour=(0, 255, 0), off_colour=(255, 0, 0))
+        menu.moveTo(100, 100)
+        menu.layout.setLayerName('a')
+        self.w.addActor(menu)
+        menu.clearSelection()
+        self.w.renderTo(self.r, 0)
+        self.r.render()
+        #
+        self.save(self.r, 1)
+        self.checkPoint((255,0,0,255), self.r.getSurface(), (100, 25), 'one')
+        self.checkPoint((255,0,0,255), self.r.getSurface(), (100, 175), 'two')        
+
     def testFailToggledMenuNoItems(self):
         """testFailToggledMenuNoItems: should fail if toggled menu creates no items"""
         self.assertRaises(serge.blocks.actors.InvalidMenu,
@@ -287,7 +303,8 @@ class TestActorBlocks(unittest.TestCase, VisualTester):
         self.save(self.r, 1)
         self.checkPoint((0,255,0,255), self.r.getSurface(), (100, 25), 'one')
         self.checkPoint((255,0,0,255), self.r.getSurface(), (100, 175), 'two')        
-        
+    
+    
     ### Physics actors ###  
     
     def testCanCreatePhysicsActor(self):

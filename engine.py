@@ -334,7 +334,7 @@ class Engine(common.Loggable, serialize.Serializable, common.EventAware):
     
     def processEvents(self):
         """Process all the events for the current world"""
-        events = self._mouse.getActorEvents(self._current_world)
+        events = self._mouse.getActorEvents(self._current_world, layer_order=self.renderer.getRenderingOrderDictionary())
         to_do = [((event, self._mouse), actor) for event, actor in events]
         self._current_world.processEvents(to_do)
 

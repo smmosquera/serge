@@ -89,7 +89,11 @@ class BehaviourRecord(object):
     def involvesActor(self, actor):
         """Return True if the behaviour involves the actor"""
         return self._actor is actor
-                         
+    
+    def getBehaviour(self):
+        """Return the behaviour we are executing"""
+        return self._behaviour
+        
                          
 class BehaviourManager(serge.actor.Actor):
     """Manages the behaviour of multiple actors in a world"""

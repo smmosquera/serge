@@ -245,12 +245,19 @@ class ToggledMenu(serge.actor.MountableActor):
             self._menu_items[item] = new_item
             self.layout.addActor(new_item)
             new_item.linkEvent(serge.events.E_LEFT_CLICK, self._itemClick, item)
-        
+    
+    def setLayerName(self, layer_name):
+        """Set the layer name"""
+        super(ToggledMenu, self).setLayerName(layer_name)
+        #
+        for child in self.layout.getChildren():
+            child.setLayerName(layer_name)
+            
     def selectItem(self, name):
         """Select an item by name"""
         #
         # Don't select if already selected
-        if name == self._selection:
+        if name == self._selection or name is None:
             return
         #
         try:
@@ -284,8 +291,20 @@ class ToggledMenu(serge.actor.MountableActor):
         
     def _itemClick(self, obj, name):
         """Clicked on an item"""
-        self.selectItem(name)     
-
+        self.selectItem(name)   
+        #
+        # Don't propagate click
+        return serge.events.E_LEFT_CLICK
+    
+    def clearSelection(self):
+        """Clear the active selection"""
+        self._selection = None
+        #
+        # Highlight items
+        for item in self._menu_items.values():
+            item.visual.rect_visual.colour = self.off_colour
+        
+          
 
 class AnimateThenDieActor(serge.actor.Actor):
     """An actor that shows its animation and then is removed from the world"""
