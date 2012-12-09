@@ -30,8 +30,8 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
                         thing: this
                         size: big
                         size: small
-                        colourname: @colour@ @name@
-                        cn: @colourname@
+                        colourname: @{colour}@ @{name}@
+                        cn: @{colourname}@
                     '''
         self.e2 = '''
                         colour {
@@ -46,8 +46,15 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
                         thing: this
                         size: big
                         size: small
-                        colourname: @colour@ @name@
-                        cn: @colourname@
+                        colourname: @{colour}@ @{name}@
+                        cn: @{colourname}@
+                  '''
+        self.e3 = '''
+                        sex: male
+                        sex: female
+                        male-name: bob
+                        female-name: alice
+                        name: @{@{sex}@-name}@
                   '''
                     
     def tearDown(self):
@@ -72,7 +79,7 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
     def testMultiExampleText(self):
         """testMultiExampleText: should be able to use multiexamples in text"""
         self.t.addExamplesFromText(self.e2)
-        s = self.t.getRandomSentence('@colour@ @name@')
+        s = self.t.getRandomSentence('@{colour}@ @{name}@')
         a, b = s.split(' ')
         self.assertEqual(True, a in ['red', 'blue', 'green'])
         self.assertEqual(True, b in ['bob', 'fred'])
@@ -80,19 +87,19 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
     def testSingleReplacement(self):
         """testSingleReplacement: should be able to do a single replacement"""
         self.t.addExamplesFromText(self.e1)
-        s = self.t.getRandomSentence('@thing@')
+        s = self.t.getRandomSentence('@{thing}@')
         self.assertEqual('this', s)
         
     def testSingleOneFromMany(self):
         """testSingleOneFromMany: should be able to do a one from many replacement"""
         self.t.addExamplesFromText(self.e1)
-        s = self.t.getRandomSentence('@colour@')
+        s = self.t.getRandomSentence('@{colour}@')
         self.assertEqual(True, s in ['red', 'blue', 'green'])
     
     def testTwoSinglesInOne(self):
         """testTwoSinglesInOne: should be able to do two examples of a single replacement"""
         self.t.addExamplesFromText(self.e1)
-        s = self.t.getRandomSentence('@colour@ @name@')
+        s = self.t.getRandomSentence('@{colour}@ @{name}@')
         a, b = s.split(' ')
         self.assertEqual(True, a in ['red', 'blue', 'green'])
         self.assertEqual(True, b in ['bob', 'fred'])
@@ -100,7 +107,7 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
     def testDoubleLevelReplacement(self):
         """testDoubleLevelReplacement: should be able to do a two level replacement"""
         self.t.addExamplesFromText(self.e1)
-        s = self.t.getRandomSentence('@colourname@')
+        s = self.t.getRandomSentence('@{colourname}@')
         a, b = s.split(' ')
         self.assertEqual(True, a in ['red', 'blue', 'green'])
         self.assertEqual(True, b in ['bob', 'fred'])
@@ -108,10 +115,16 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
     def testRecursizeRepalcement(self):
         """testRecursizeRepalcement: should be able to do recursive replacement"""
         self.t.addExamplesFromText(self.e1)
-        s = self.t.getRandomSentence('@cn@')
+        s = self.t.getRandomSentence('@{cn}@')
         a, b = s.split(' ')
         self.assertEqual(True, a in ['red', 'blue', 'green'])
         self.assertEqual(True, b in ['bob', 'fred'])
+    
+    def testNestedReplacement(self):
+        """testNestedReplacement: should be able to do a nested replacement"""
+        self.t.addExamplesFromText(self.e3)
+        self.assertEqual('bob', self.t.getRandomSentence('@{name}@', {'sex':'male'}))
+        self.assertEqual('alice', self.t.getRandomSentence('@{name}@', {'sex':'female'}))
         
 if __name__ == '__main__':
     unittest.main()
