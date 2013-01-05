@@ -80,34 +80,38 @@ class TextGenerator(object):
         text = file(filename, 'r').read()
         self.addExamplesFromText(text)
                 
-    def getRandomFormCompletion(self, name):
+    def getRandomFormCompletion(self, name, properties=None):
         """Return the comletion of a form randomly"""
+        properties = {} if properties is None else properties
         try:
             results = self.forms[name]
         except KeyError:
             # No name found
             raise NameNotFound('The expansion @%s@ was not defined' % name)
         else:
-            return random.choice(list(results))
+            result = random.choice(list(results))
+            if name not in properties:
+                properties[name] = result
+            return result
         
     def getRandomSentence(self, text, properties=None):
         """Return a random sentence from the text"""
         if properties is None:
             properties = {}
-        match = re.match('(.*?)@(.*?)@(.*)', text, re.DOTALL+re.M)
+        match = re.match('(.*)@{(.+?)}@(.*)', text, re.DOTALL+re.M)
         if match:
             name = match.groups()[1]
             try:
+                notfound = False
                 replacement = properties[name]
             except KeyError:
-                replacement = self.getRandomFormCompletion(name)
-                if '@' not in replacement:
-                    properties[name] = replacement
+                replacement = self.getRandomFormCompletion(name, properties)
             #
-            return self.getRandomSentence(
+            result = self.getRandomSentence(
                 match.groups()[0] + 
                 replacement + 
                 match.groups()[2], properties)
+            return result
         else:
             return text
             

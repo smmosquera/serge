@@ -284,7 +284,16 @@ def checkNetworkXVersion(need_version):
             return False
     return True
     
-
+def checkPyOpenGLVersion(need_version):
+    """Check a suitable PyOpenGL is installed"""
+    try:
+        import OpenGL
+    except ImportError:
+        print 'PyOpenGL is not installed\nTry "pip install PyOpenGL PyOpenGL_accelerate'
+        return False
+    else:
+        return True
+        
 
 def worldCallback(name, sound=None):
     """Return an event callback to switch to a certain world"""

@@ -125,6 +125,13 @@ class TestTextGenerator(unittest.TestCase, VisualTester):
         self.t.addExamplesFromText(self.e3)
         self.assertEqual('bob', self.t.getRandomSentence('@{name}@', {'sex':'male'}))
         self.assertEqual('alice', self.t.getRandomSentence('@{name}@', {'sex':'female'}))
+    
+    def testCanCheckPropertiesAfterwards(self):
+        """testCanCheckPropertiesAfterwards: shold be able to check properties afterwars"""
+        self.t.addExamplesFromText(self.e3)
+        p = {'sex':'male'}
+        self.assertEqual('bob', self.t.getRandomSentence('@{name}@', p))
+        self.assertEqual('bob', self.t.getRandomSentence('@{name}@', p))
         
 if __name__ == '__main__':
     unittest.main()

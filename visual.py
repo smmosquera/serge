@@ -442,7 +442,7 @@ class Sprite(Drawing):
             self.current_cell = number
         else:
             raise InvalidCell('Cell number %d is out of range (%d) for this sprite (%s)' % (
-                    number, self.getNumberOfCells(), self.name))
+                    number, self.getNumberOfCells(), self))
         
     def getCell(self):
         """Return the current cell number"""
