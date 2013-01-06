@@ -260,8 +260,7 @@ class ToggledMenu(serge.actor.MountableActor):
         """Set the layer name"""
         super(ToggledMenu, self).setLayerName(layer_name)
         #
-        for child in self.layout.getChildren():
-            child.setLayerName(layer_name)
+        self.layout.setLayerName(layer_name)
             
     def selectItem(self, name):
         """Select an item by name"""
