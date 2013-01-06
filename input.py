@@ -3,6 +3,7 @@
 import pygame
 import common
 import actor
+import render
 pymunk = common.pymunk
 
 #These represet mouse states we can query.
@@ -312,8 +313,11 @@ class Mouse(object):
             x, y = self.getScreenPos()
             sx, sy = self.getStaticScreenPos()
             r = self.engine.getRenderer()
-            actors_camera = set([a for a in world.findActorsAt(x, y) if not r.getLayer(a.layer).static])
-            actors_static = set([a for a in world.findActorsAt(sx, sy) if r.getLayer(a.layer).static])
+            try:
+                actors_camera = set([a for a in world.findActorsAt(x, y) if not r.getLayer(a.layer).static])
+                actors_static = set([a for a in world.findActorsAt(sx, sy) if r.getLayer(a.layer).static])
+            except render.UnknownLayer:
+                raise render.UnknownLayer('Layer "%s" not found for actor %s' % (a.layer, a.getNiceName()))
             #
             self._actors_under_mouse = actor.ActorCollection(list(actors_static) + list(actors_camera))
         #

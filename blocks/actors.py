@@ -208,7 +208,17 @@ class MuteButton(serge.actor.Actor):
 
 
 class ToggledMenu(serge.actor.MountableActor):
-    """Implements a menu of options that can be toggled"""
+    """Implements a menu of options that can be toggled
+    
+    The layout of the options will be determined by the layout object. Items will
+    be added to the layout in the order they are specified.
+    
+    The callback provided will be called whenever the selection changes. The function
+    will be called with the menu obejct and the name of the option selected.
+        
+        callback(menuObject, newOption)
+    
+    """
 
     def __init__(self, tag, name, items, layout, default, on_colour, off_colour, 
                     width=100, height=100, callback=None, font_colour=(255, 255, 255, 255), 
