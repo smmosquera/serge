@@ -2,6 +2,7 @@
 
 import pygame
 import os
+import time
 
 import serge.actor
 import serge.engine
@@ -720,4 +721,74 @@ class ConstantVelocity(Behaviour):
         """Update the actor position"""
         actor.move(self.vx * interval/1000.0, self.vy * interval/1000.0)
         
+
+class Tooltip(Behaviour):
+    """A tooltip behaviour that displays a message when you mouse over one of a number of actors
+
+    You specify a list of actors and some parameters of the tip via the theme and the name
+    of an attribute to use from the actor. The attribute is the text used for the tip.
+    If the content of the attribute is None then the tooltip will not be shown.
+
+    You give the theme object of the tooltip theme. It should contain,
+
+        size : (width, height),
+        backcolour : (r,g,b),
+        strokecolour : (r,g,b),
+        strokewidth : int,
+        layer : layer_name,
+        fontsize : int,
+        fontcolour : (r, g, b)
+        hidetime : seconds_to_hide
+
+    """
+
+    def __init__(self, actors, theme, attribute_name):
+        """Initialise the behaviour"""
+        super(Tooltip, self).__init__()
+        self.actors = actors
+        self.theme = theme
+        self.attribute_name = attribute_name
+        self.mouse = serge.engine.CurrentEngine().getMouse()
+        self._last_shown = time.time()
+        self._last_actor = None
+        #
+        # Create the tooltip visual elements
+        self._tip = serge.blocks.visualblocks.RectangleText('tooltip',
+            theme('text-colour'), theme('size'), theme('background-colour'),
+            theme('font-size'), stroke_width=theme('stroke-width'),
+            stroke_colour=theme('stroke-colour'))
+        self._tooltip = serge.actor.Actor('tooltip', 'tooltip')
+        self._tooltip.visual = self._tip
+        self._tooltip.active = False
+        self._tooltip.setLayerName(theme('layer'))
+        #
+        self._offset = theme('position-offset')
+        self._initialised = False
+
+    def __call__(self, world, actor, interval):
+        """Check if the tooltip should be appearing"""
+        #
+        # If this is the first time then add the tooltip actor to the world
+        if not self._initialised:
+            world.addActor(self._tooltip)
+            self._initialised = True
+        #
+        # Look to see if the mouse is over the top of any of our actors
+        mouse_pos = serge.geometry.Point(*self.mouse.getScreenPos())
+        for actor in self.actors:
+            tooltip_text = getattr(actor, self.attribute_name)
+            #
+            # Are we mousing over the actor
+            if tooltip_text and mouse_pos.isInside(actor):
+                self._last_shown = time.time()
+                self._tooltip.active = True
+                if actor != self._last_actor:
+                    self._tooltip.moveTo(mouse_pos.x+self._offset[0], mouse_pos.y+self._offset[1])
+                    self._tip.text_visual.setText(tooltip_text)
+                self._last_actor = actor
+                break
+        else:
+            if time.time() - self._last_shown > self.theme('hide-time'):
+                self._tooltip.active = False
+                self._last_actor = None
 
