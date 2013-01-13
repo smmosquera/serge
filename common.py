@@ -112,7 +112,9 @@ class Loggable(object):
     usual *debug*, *warn*, *info*, and *error* methods.
     
     """
-    
+
+    log = None
+
     def addLogger(self):
         """Add a logger"""
         if not 'log' in self.__class__.__dict__:

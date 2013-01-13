@@ -486,7 +486,19 @@ class TestActor(unittest.TestCase):
         self.assertEqual((110, 100), (b.x, b.y))
         a.setAngle(90)
         self.assertEqual(90, b.getAngle())
-        self.assertEqual((100, 90), (b.x, b.y))        
+        self.assertEqual((100, 90), (b.x, b.y))
+
+    def testCanAvoidRotateMountedActor(self):
+        """testCanAvoidRotateMountedActor: should be able to rotate a mounted actor"""
+        a = serge.actor.MountableActor('main')
+        b = serge.actor.Actor('b')
+        b.moveTo(50,60)
+        a.mountActor(b, (10, 0), rotate_with_actor=False)
+        a.moveTo(100, 100)
+        self.assertEqual((110, 100), (b.x, b.y))
+        a.setAngle(90)
+        self.assertEqual(0, b.getAngle())
+        self.assertEqual((110, 100), (b.x, b.y))
 
     def testCanRotateMountedActorManytimes(self):
         """testCanRotateMountedActorManytimes: should be able to rotate mounted actor a few times"""

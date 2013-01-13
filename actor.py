@@ -474,12 +474,15 @@ class AbstractMountableActor(CompositeActor):
         super(AbstractMountableActor, self).__init__(*args, **kw)
         self._offsets = {}
         
-    def mountActor(self, actor, (x, y), original_rotation=False):
+    def mountActor(self, actor, (x, y), original_rotation=False, rotate_with_actor=True):
         """Mount the actor with the given offset
         
         If original_rotation is True then the mount offset is taken as
         working against the original rotation (ie angle = 0) of the
         actor.
+
+        If rotate_with_actor is set to False then this actor will not rotate
+        with the parent actor, it will just move.
         
         """
         if self.hasChild(actor):
@@ -491,7 +494,7 @@ class AbstractMountableActor(CompositeActor):
             self.setAngle(0.0)
         #
         self.addChild(actor)
-        self._offsets[actor] = (x, y)
+        self._offsets[actor] = (x, y, rotate_with_actor)
         actor.moveTo(self.x + x, self.y + y)
         #
         if original_rotation:
@@ -523,7 +526,7 @@ class MountableActor(AbstractMountableActor):
     def moveTo(self, x, y, no_sync=False, override_lock=False):
         """Move this actor"""
         super(AbstractMountableActor, self).moveTo(x, y, no_sync=no_sync, override_lock=override_lock)
-        for actor, (dx, dy) in self._offsets.iteritems():
+        for actor, (dx, dy, rotate) in self._offsets.iteritems():
             actor.moveTo(x+dx, y+dy, no_sync=no_sync, override_lock=True)
             
     def setAngle(self, angle, sync_physical=False, override_lock=False):
@@ -532,17 +535,18 @@ class MountableActor(AbstractMountableActor):
             raise PositionLocked('Cannot rotate: %s' % self.lock.reason)
         old_angle = self.getAngle()
         super(AbstractMountableActor, self).setAngle(angle, sync_physical=sync_physical, override_lock=override_lock)
-        for actor, (dx, dy) in self._offsets.iteritems():
-            actor.setAngle(angle, sync_physical=sync_physical, override_lock=True)
-            #
-            # Now also rotate the position
-            off = pymunk.Vec2d(dx, dy)
-            off.rotate(math.radians(-(angle-old_angle))) # Pymunk's angles reversed compared to pygame
-            nx, ny = off
-            actor.moveTo(self.x + nx, self.y + ny, override_lock=True)
-            #
-            # Update the offsets so we stay in position
-            self._offsets[actor] = (nx, ny)
+        for actor, (dx, dy, rotate) in self._offsets.iteritems():
+            if rotate:
+                actor.setAngle(angle, sync_physical=sync_physical, override_lock=True)
+                #
+                # Now also rotate the position
+                off = pymunk.Vec2d(dx, dy)
+                off.rotate(math.radians(-(angle-old_angle))) # Pymunk's angles reversed compared to pygame
+                nx, ny = off
+                actor.moveTo(self.x + nx, self.y + ny, override_lock=True)
+                #
+                # Update the offsets so we stay in position
+                self._offsets[actor] = (nx, ny, rotate)
 
         
 
@@ -578,12 +582,13 @@ class PhysicallyMountableActor(AbstractMountableActor):
         self._joints = []
         super(PhysicallyMountableActor, self).init()
         
-    def mountActor(self, actor, (x, y), original_rotation=False):
+    def mountActor(self, actor, (x, y), original_rotation=False, rotate_with_actor=True):
         """Mount the actor with the given offset"""
         if not actor.getPhysical():
             raise NoPhysicalConditions('Actor %s does not have any physical conditions. Cannot mount to %s' % (
                 actor.getNiceName(), self.getNiceName()))
-        super(PhysicallyMountableActor, self).mountActor(actor, (x, y), original_rotation)
+        super(PhysicallyMountableActor, self).mountActor(actor, (x, y),
+            original_rotation, rotate_with_actor)
 
         
     def unmountActor(self, actor):
@@ -642,18 +647,20 @@ class PhysicallyMountableActor(AbstractMountableActor):
         if sync_physical:
             self._clearJoints()
             old_angle = self.getAngle()
-            for actor, (dx, dy) in self._offsets.iteritems():
-                #
-                # Now also rotate the position
-                off = actor.getPhysical().body.position - self.getPhysical().body.position
-                off.rotate(math.radians(-(angle-old_angle))) # Pymunk's angles reversed compared to pygame
-                nx, ny = off
-                actor.moveTo(self.x + nx, self.y + ny, no_sync=False, override_lock=True)
-                actor.setAngle(angle, sync_physical=sync_physical, override_lock=True)
-                actor.getPhysical().body.angular_velocity = 0.0
-                #
-                # Update the offsets so we stay in position
-                self._offsets[actor] = (nx, ny)
+            for actor, (dx, dy, rotate) in self._offsets.iteritems():
+                if rotate:
+                    #
+                    # Now also rotate the position
+                    off = actor.getPhysical().body.position - self.getPhysical().body.position
+                    off.rotate(math.radians(-(angle-old_angle))) # Pymunk's angles reversed compared to pygame
+                    nx, ny = off
+                    actor.moveTo(self.x + nx, self.y + ny, no_sync=False, override_lock=True)
+                    actor.setAngle(angle, sync_physical=sync_physical, override_lock=True)
+                    actor.getPhysical().body.angular_velocity = 0.0
+                    #
+                    # Update the offsets so we stay in position
+                    self._offsets[actor] = (nx, ny, rotate)
+        #
         super(PhysicallyMountableActor, self).setAngle(angle, sync_physical=sync_physical, override_lock=override_lock)
         self.getPhysical().body.angular_velocity = 0.0
         if sync_physical:
