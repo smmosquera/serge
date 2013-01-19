@@ -331,7 +331,11 @@ class Layer(serge.common.Loggable):
         return (self.width, self.height)
 
     def addObject(self, obj):
-        """Add an object"""
+        """Add an object
+
+        :param obj: the object to add to the layer
+
+        """
         self.objects.append(obj)
         
     def getObjects(self):
@@ -339,7 +343,11 @@ class Layer(serge.common.Loggable):
         return self.objects
 
     def getObject(self, name):
-        """Return the named object"""
+        """Return the named object
+
+        :param name: the name of the object to return
+
+        """
         for obj in self.getObjects():
             if obj.name == name:
                 return obj
@@ -357,6 +365,19 @@ class Layer(serge.common.Loggable):
         for y, row in enumerate(self.tiles):
             for x, item in enumerate(row):
                 if item != 0:
+                    matches.append((x, y))
+        return matches
+
+    def getLocationsWithSpriteName(self, sprite_name):
+        """Return all tile locations with a specific tile
+
+        :param sprite_name: the name of the sprite you are looking for
+
+        """
+        matches = []
+        for y, row in enumerate(self.tiles):
+            for x, item in enumerate(row):
+                if item and self.tiled.getSpriteName(item) == sprite_name:
                     matches.append((x, y))
         return matches
 

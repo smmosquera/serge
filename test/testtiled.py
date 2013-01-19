@@ -244,7 +244,18 @@ class TestTiled(unittest.TestCase):
         self.assertTrue((0,0) in set_tiles)
         self.assertTrue((35, 10) in set_tiles)
         self.assertFalse((14, 7) in set_tiles)
-        
+    
+    def testCanFindSpecificTileSetOn(self):
+        """testCanFindSpecificTileSetOn: should be able to check locations a tile is set on"""
+        t = serge.blocks.tiled.Tiled(f('world-4.tmx'))
+        #
+        l = t.getLayer("Tile Layer 1")
+        set_tiles = set(l.getLocationsWithSpriteName('tileset-2-9'))
+        self.assertSetEqual(
+            set([(41,25), (41,26), (41,27), (41,28),
+                 (50,25), (50,26), (50,27), (50,28)]),
+            set_tiles)
+
     def testCanGetPropertyBagArray(self):
         """testCanGetPropertyBagArray: should be able to get a property bag array"""
         t = serge.blocks.tiled.Tiled(f('world-5.tmx'))

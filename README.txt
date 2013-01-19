@@ -102,4 +102,5 @@ What's New
     Added installDebugHook to serge.common. If you call this then the game will drop into pdb when an unhandled error occurs
     Added TextGenerator block to allow generation of randomized text
     ToggledMenu now sets layer properly for menu items
-    
+0.4.3
+    Tiled layer now supports getLocationsWithSpriteName to find specific sprites on a layer
