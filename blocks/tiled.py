@@ -279,9 +279,31 @@ class Tiled(TileMap):
                 #
                 # Find objects in this layer
                 for obj in layer.findall('object'):
+                    #
+                    # Watch out for polygon objects
+                    children = obj.getchildren()
+                    if children and children[0].tag == 'polygon':
+                        try:
+                            point_string = children[0].attrib['points']
+                        except Exception, err:
+                            raise BadLayer('Object "%s" on layer "%s" not recognized: %s' % (
+                                obj.attrib.get('name', 'unknown'), name, err))
+                        #
+                        # Convert points to integers and find the extent
+                        points = [map(int, coords.split(',')) for coords in point_string.split(' ')]
+                        x, y = zip(*points)
+                        width = max(x)
+                        height = max(y)
+                    else:
+                        #
+                        # Just get the width and height from the specified object
+                        width = int(obj.attrib.get('width', 0))
+                        height = int(obj.attrib.get('height', 0))
+                    #
+                    # Create the new object
                     new_layer.addObject(TileObject(
                         obj.attrib['name'], obj.attrib['type'], int(obj.attrib['x']), int(obj.attrib['y']), 
-                        int(obj.attrib.get('width', 0)), int(obj.attrib.get('height', 0)),
+                        width, height,
                         self.getPropertiesFrom(obj.findall('properties/property'))))
 
     def getObjectLayers(self):

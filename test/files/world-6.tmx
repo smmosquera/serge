@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="80" height="60" tilewidth="10" tileheight="10">
+ <objectgroup name="Object Layer 1" width="80" height="60">
+  <object name="one" type="object" x="146" y="63">
+   <polygon points="0,0 77,1 77,90 3,89"/>
+  </object>
+  <object name="two" type="object" x="374" y="135">
+   <polygon points="0,0 86,0 86,106 1,103"/>
+  </object>
+ </objectgroup>
+</map>

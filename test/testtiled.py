@@ -207,7 +207,23 @@ class TestTiled(unittest.TestCase):
         self.assertEqual(6, len(objects))
         self.assertEqual('tileset-2-6', objects[0].sprite_name)
         
-    
+    def testCanDoPolygonObjects(self):
+        """testCanDoPolygonObjects: should be able to do polygon objects"""
+        t = serge.blocks.tiled.Tiled(f('world-6.tmx'))
+        #
+        layers = t.getObjectLayers()
+        self.assertEqual(1, len(layers))
+        #
+        objects = layers[0].getObjects()
+        self.assertEqual(2, len(objects))
+        #
+        obj1, obj2 = objects
+        self.assertEqual('one', obj1.name)
+        self.assertEqual((146, 63), (obj1.x, obj1.y))
+        self.assertEqual((77, 90), (obj1.width, obj1.height))
+        #
+        self.assertEqual('two', obj2.name)
+        self.assertEqual((86, 106), (obj2.width, obj2.height))
         
     def testFailGettingMissingObject(self):
         """testFailGettingMissingObject: should fail when getting mission object"""
