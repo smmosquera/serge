@@ -105,3 +105,4 @@ What's New
 0.4.3
     Tiled layer now supports getLocationsWithSpriteName to find specific sprites on a layer
     Tiled object layers now support getting width and height from polygon objects
+    Added new Storage block to handle SQL storage of game data

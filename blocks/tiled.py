@@ -6,6 +6,7 @@ from xml.etree.ElementTree import ElementTree
 
 import serge.common
 import serge.visual
+import serge.geometry
 
 
 class BadTiledFile(Exception): """The tiled file could not be found"""
@@ -423,19 +424,15 @@ class Layer(serge.common.Loggable):
 
 
                   
-class TileObject(serge.common.Loggable):
+class TileObject(serge.geometry.Rectangle, serge.common.Loggable):
     """A tile"""
     
     def __init__(self, name, object_type, x, y, width, height, properties, sprite_name=None):
         """Initialise the tile"""
         self.name = name
         self.object_type = object_type
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        self.setSpatial(x, y, width, height)
         self.sprite_name = sprite_name
-        
         #
         # Set properties
         self.properties = properties

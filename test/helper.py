@@ -14,8 +14,18 @@ def j(*f):
 
 def f(*f):
     """Return full path to file"""
-    return os.path.join(os.path.abspath(os.curdir), 'test', 'files', *f)
-    
+    if os.path.abspath('.').endswith('test'):
+        return os.path.join(os.path.abspath(os.curdir), 'files', *f)
+    else:
+        return os.path.join(os.path.abspath(os.curdir), 'test', 'files', *f)
+
+def removeIfThere(filename):
+    """Safely remove a file if it is there"""
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+
 class VisualTester:
     """A mixin to help testing visual items"""
     

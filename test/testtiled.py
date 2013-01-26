@@ -189,8 +189,8 @@ class TestTiled(unittest.TestCase):
         self.assertEqual('Door', td.object_type)
         self.assertEqual('world-5', td.leads_to)
         self.assertEqual('shop-west', td.location)
-        self.assertEqual(round(41.125*16), td.x)
-        self.assertEqual(round(25.250*16), td.y)
+        self.assertEqual(round(41.125*16)+td.width/2, td.x)
+        self.assertEqual(round(25.250*16)+td.height/2, td.y)
         self.assertEqual((round(0.688*16), round(3.562*16)), (td.width, td.height))
         #
         self.assertEqual('Mission1a', l2.name)
@@ -219,7 +219,7 @@ class TestTiled(unittest.TestCase):
         #
         obj1, obj2 = objects
         self.assertEqual('one', obj1.name)
-        self.assertEqual((146, 63), (obj1.x, obj1.y))
+        self.assertEqual((184, 108), (obj1.x, obj1.y))
         self.assertEqual((77, 90), (obj1.width, obj1.height))
         #
         self.assertEqual('two', obj2.name)
