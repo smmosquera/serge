@@ -7,5 +7,8 @@
   <object name="two" type="object" x="374" y="135">
    <polygon points="0,0 86,0 86,106 1,103"/>
   </object>
+  <object name="three" type="object" x="547" y="278">
+   <polygon points="-23,-24 77,-25 81,89 -24,89"/>
+  </object>
  </objectgroup>
 </map>
