@@ -42,6 +42,15 @@ class TestStorage(unittest.TestCase, VisualTester):
         self.x = serge.blocks.storage.Storage('storage.db', os.path.join('files'))
         self.assertEqual([], self.x.get('select * from scores'))
     
+    def testCanCreateMultipleTimes(self):
+        """testCanCreateMultipleTimes: should be able to create multiple times"""
+        self.s.addTable('scores', 'create table scores (level int, date datetime, score int)')
+        self.s.save()
+        self.s.close()
+        #
+        self.s = serge.blocks.storage.Storage('storage.db', os.path.join('files'))
+        self.s.addTable('scores', 'create table scores (level int, date datetime, score int)')
+
     def testCanIncludeDefaultData(self):
         """testCanIncludeDefaultData: should be able to set default data"""
         self.s.addTable('scores', 'create table scores (level int, date datetime, score int)')

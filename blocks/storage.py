@@ -41,7 +41,14 @@ class Storage(serge.common.Loggable):
 
     def addTable(self, name, sql):
         """Add a new table"""
-        self.cursor.execute(sql)
+        #
+        # Do not do this if the table already exists
+        try:
+            self.get('select * from %s' % name)
+        except sqlite3.OperationalError:
+            self.cursor.execute(sql)
+        else:
+            pass # Table is there - ok
 
     def addDefaultRows(self, table_name, row_key, rows, override=False):
         """Add some default rows to the database
