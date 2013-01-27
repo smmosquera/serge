@@ -215,16 +215,20 @@ class TestTiled(unittest.TestCase):
         self.assertEqual(1, len(layers))
         #
         objects = layers[0].getObjects()
-        self.assertEqual(2, len(objects))
+        self.assertEqual(3, len(objects))
         #
-        obj1, obj2 = objects
+        obj1, obj2, obj3 = objects
         self.assertEqual('one', obj1.name)
         self.assertEqual((184, 108), (obj1.x, obj1.y))
         self.assertEqual((77, 90), (obj1.width, obj1.height))
         #
         self.assertEqual('two', obj2.name)
         self.assertEqual((86, 106), (obj2.width, obj2.height))
-        
+        #
+        self.assertEqual('three', obj3.name)
+        self.assertEqual(((547-24)+obj3.width/2, (278-25)+obj3.height/2), (obj3.x, obj3.y))
+        self.assertEqual((81--24, 89--25), (obj3.width, obj3.height))
+
     def testFailGettingMissingObject(self):
         """testFailGettingMissingObject: should fail when getting mission object"""
         t = serge.blocks.tiled.Tiled(f('world-4.tmx'))

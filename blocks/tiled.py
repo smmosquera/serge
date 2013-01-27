@@ -293,17 +293,21 @@ class Tiled(TileMap):
                         # Convert points to integers and find the extent
                         points = [map(int, coords.split(',')) for coords in point_string.split(' ')]
                         x, y = zip(*points)
-                        width = max(x)
-                        height = max(y)
+                        min_x, max_x = min(x), max(x)
+                        min_y, max_y = min(y), max(y)
+                        x_pos, y_pos = int(obj.attrib['x']) + min_x, int(obj.attrib['y']) + min_y
+                        width = max_x - min_x
+                        height = max_y - min_y
                     else:
                         #
                         # Just get the width and height from the specified object
                         width = int(obj.attrib.get('width', 0))
                         height = int(obj.attrib.get('height', 0))
+                        x_pos, y_pos = int(obj.attrib['x']), int(obj.attrib['y'])
                     #
                     # Create the new object
                     new_layer.addObject(TileObject(
-                        obj.attrib['name'], obj.attrib['type'], int(obj.attrib['x']), int(obj.attrib['y']), 
+                        obj.attrib['name'], obj.attrib['type'], x_pos, y_pos,
                         width, height,
                         self.getPropertiesFrom(obj.findall('properties/property'))))
 
