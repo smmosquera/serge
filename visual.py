@@ -159,9 +159,12 @@ class Store(registry.GeneralStore):
     
     def registerItemsFromPattern(self, pattern, prefix='', w=1, h=1, framerate=0, running=False, rectangular=True, angle=0.0, zoom=1.0, loop=True, one_direction=False, convert_alpha=False):
         """Register all items matching a certain regular expression"""
+        log.info('Registering sprites from pattern "%s"' % pattern)
         items = [item for item in os.listdir(self._resolveFilename('')) if re.match(pattern, item)]
         for item in items:
-            self.registerItem('%s%s' % (prefix, os.path.splitext(item)[0]), 
+            name = '%s%s' % (prefix, os.path.splitext(item)[0])
+            log.debug('Found sprite "%s" - registered as "%s"' % (item, name))
+            self.registerItem(name,
                 item, w, h, framerate, running, rectangular, angle, zoom, loop, one_direction, convert_alpha)
         
          
