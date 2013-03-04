@@ -143,7 +143,8 @@ def addMuteButtonToWorlds(button, center_position, world_names=None):
     for name in world_names:
         world = engine.getWorld(name)
         addActorToWorld(world, button, center_position=center_position)
-    
+
+
 class MovieRecorder(object):
     """Will record a movie of the game"""
 
