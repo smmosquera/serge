@@ -106,3 +106,5 @@ What's New
     Tiled layer now supports getLocationsWithSpriteName to find specific sprites on a layer
     Tiled object layers now support getting width and height from polygon objects
     Added new Storage block to handle SQL storage of game data
+0.4.4
+    Added hasItem method to Registry

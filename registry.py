@@ -86,7 +86,11 @@ class GeneralStore(serialize.Serializable):
             return self.items[name]
         except KeyError:
             raise UnknownItem('The item called "%s" could not be found' % name)
-        
+
+    def hasItem(self, name):
+        """Return True if the named item is in the registry"""
+        return name in self.items
+
     def duplicateItem(self, name, new_name):
         """Create a duplicate of the named item with a new name"""
         #
