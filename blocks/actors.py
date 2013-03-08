@@ -5,12 +5,16 @@ import pygame
 import serge.actor
 import serge.engine
 import serge.actor
+import serge.input
 import serge.events
+import serge.sound
 import serge.blocks.behaviours
+import serge.blocks.visualblocks
+import serge.blocks.behaviours
+
 
 class InvalidMenu(Exception): """The menu was not valid"""
 class InvalidMenuItem(Exception): """The menu item was not understood"""
-
 
 
 class ScreenActor(serge.actor.CompositeActor):
@@ -64,12 +68,14 @@ class RepeatedVisualActor(serge.actor.Actor):
         cx, cy, _, _ = self.getSpatialCentered()
         #
         if self._orientation == 'horizontal':
-            self.setSpatialCentered(cx, cy, 
-                self._visual.width + self._spacing*(self._repeat-1), self._visual.height)
+            self.setSpatialCentered(
+                cx, cy,
+                self._visual.width + self._spacing * (self._repeat - 1), self._visual.height)
         else:
-            self.setSpatialCentered(cx, cy, 
-                self._visual.width, self._visual.height + self._spacing*(self._repeat-1))
-        #
+            self.setSpatialCentered(
+                cx, cy,
+                self._visual.width, self._visual.height + self._spacing * (self._repeat - 1))
+            #
         # Here is a hack - sometimes the visual width changes and we want to update our width
         # so we let the visual know about us so it can update our width. This is almost 
         # certainly the wrong thing to do, but we have some tests in there so hopefully
@@ -77,7 +83,7 @@ class RepeatedVisualActor(serge.actor.Actor):
         self._visual._actor_parent = self
         
     def renderTo(self, renderer, interval):
-        """Render ourself to the given renderer"""
+        """Render to the given renderer"""
         if self._visual:
             layer = renderer.getLayer(self.layer)
             camera = renderer.camera
@@ -85,8 +91,9 @@ class RepeatedVisualActor(serge.actor.Actor):
                 ox, oy = self.getOrigin()
             elif camera.canSee(self):
                 ox, oy = camera.getRelativeLocation(self)
-            else: 
-                return # Cannot see me
+            else:
+                # Cannot see me
+                return
             if self.layer:
                 for i in range(self._current):
                     if self._orientation == 'horizontal':
@@ -151,6 +158,7 @@ class FormattedText(serge.actor.Actor):
         """Get the values"""
         return self.values[name]
 
+
 class NumericText(FormattedText):
     """A helper actor to display some text with a single number in there"""
 
@@ -164,6 +172,7 @@ class NumericText(FormattedText):
 
     @property
     def value(self): return self.getValue('value')
+
     @value.setter
     def value(self, v): self.setValue('value', v)
 
@@ -181,6 +190,7 @@ class StringText(FormattedText):
 
     @property
     def value(self): return self.getValue('value')
+
     @value.setter
     def value(self, v): self.setValue('value', v)
 
@@ -214,7 +224,7 @@ class ToggledMenu(serge.actor.MountableActor):
     be added to the layout in the order they are specified.
     
     The callback provided will be called whenever the selection changes. The function
-    will be called with the menu obejct and the name of the option selected.
+    will be called with the menu object and the name of the option selected.
         
         callback(menuObject, newOption)
     
@@ -313,7 +323,6 @@ class ToggledMenu(serge.actor.MountableActor):
         for item in self._menu_items.values():
             item.visual.rect_visual.colour = self.off_colour
         
-          
 
 class AnimateThenDieActor(serge.actor.Actor):
     """An actor that shows its animation and then is removed from the world"""
@@ -342,7 +351,8 @@ class AnimateThenDieActor(serge.actor.Actor):
         if not self.visual.running:
             # Ok, run its course
             world.scheduleActorRemoval(self)
-            
+
+
 class FPSDisplay(NumericText):
     """Displays the current FPS on the screen"""
     
@@ -366,8 +376,7 @@ class FPSDisplay(NumericText):
         super(FPSDisplay, self).updateActor(interval, world)
         self.value = self.engine.getStats().average_frame_rate
         
-        
- 
+
 class TextEntryWidget(serge.actor.MountableActor):
     """Implements a single line text entry widget
     
@@ -586,17 +595,17 @@ class SimplePhysicsActor(serge.actor.Actor):
         self.velocity = velocity
         self.angular_velocity = angular_velocity
         self.bounds = bounds
-        
+
     def updateActor(self, interval, world):
         """Update the actor"""
         super(SimplePhysicsActor, self).updateActor(interval, world)
         #
         # Linear equation of motion
-        dx, dy = interval/1000.0 * self.velocity
+        dx, dy = interval / 1000.0 * self.velocity
         self.move(dx, dy)
         #
         # Angular equation of motion
-        da = interval/1000.0 * self.angular_velocity
+        da = interval / 1000.0 * self.angular_velocity
         self.setAngle(self.getAngle() + da)
         #
         # Check for in bounds
@@ -607,4 +616,54 @@ class SimplePhysicsActor(serge.actor.Actor):
                 world.scheduleActorRemoval(self)
 
 
-                          
+class FullScreenMenu(serge.actor.MountableActor):
+    """A full screen menu"""
+
+    def __init__(self, tag, name, items, layout, callback, background_colour=(0, 0, 0),
+                 font_colour=(255, 255, 255), font_size=12, font_name='DEFAULT'):
+        """Initialise the menu"""
+        super(FullScreenMenu, self).__init__(tag, name)
+        #
+        self.background_colour = background_colour
+        self.font_colour = font_colour
+        self.font_size = font_size
+        self.font_name = font_name
+        self.layout = layout
+        self.items = items
+        self.callback = callback
+        #
+        sx, sy = serge.engine.CurrentEngine().getRenderer().getScreenSize()
+        self.moveTo(sx / 2, sy / 2)
+        #
+        # Background
+        self.bg = self.mountActor(serge.actor.Actor('menu', 'bg'), (0, 0))
+        self.bg.visual = serge.blocks.visualblocks.Rectangle(
+            (sx, sy), self.background_colour
+        )
+        self.bg.linkEvent(serge.events.E_LEFT_CLICK, lambda o, a: serge.events.E_LEFT_CLICK)
+        #
+        # Layout
+        self.mountActor(self.layout, (0, 0))
+        #
+        # Options
+        for idx, item in enumerate(self.items):
+            actor = self.layout.addActor(StringText(
+                'menu', 'item-%d' % idx, item,
+                colour=self.font_colour,
+                font_name=self.font_name,
+                font_size=self.font_size
+            ))
+            actor.linkEvent(serge.events.E_LEFT_CLICK, self.menuClick, item)
+
+    def menuClick(self, obj, arg):
+        """Menu item was clicked"""
+        self.log.debug('Menu clicked on option "%s"' % arg)
+        self.selected = arg
+        self.callback(arg)
+        #
+        return serge.events.E_LEFT_CLICK
+
+    def setLayerName(self, name):
+        """Set the layer for the menu"""
+        for child in self.getChildren():
+            child.setLayerName(name)
