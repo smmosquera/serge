@@ -18,6 +18,7 @@ import serge.common
 
 class ConnectionError(Exception): """Could not connect to database"""
 
+
 class Storage(serge.common.Loggable):
     """The main storage object"""
 
