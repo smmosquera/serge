@@ -8,7 +8,9 @@ import random
 import serge.actor
 import serge.events
 
-class InvalidMotion(Exception): """The motion type was not recognized"""
+
+class InvalidMotion(Exception):
+    """The motion type was not recognized"""
 
 
 class Effect(serge.actor.Actor):

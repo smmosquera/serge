@@ -175,12 +175,14 @@ def darkenSurf(img, amount):
     new_img.blit(mask, (0,0), special_flags=pygame.BLEND_RGB_MULT)
     #
     return new_img
-    
+
+
 def fadeSurface(surface, v):
     """Fade the given suface by an amount 0 to 255 - 0 is completely faded"""
     surface.fill((v, v, v, v), special_flags=pygame.BLEND_RGBA_SUB)    
     return surface
-    
+
+
 def gaussianBlur(surface, sigma):
     """This function takes a pygame surface, converts it to a numpy array
     carries out gaussian blur, converts back then returns the pygame surface.
