@@ -18,7 +18,7 @@ What's New
     Added ability to specify a stroke width and colour for rectangle and circle blocks
     Added Mountable actors
     Added ActorCollections
-    Added Music Playlists
+    Added Music Play-lists
 0.2.4
     Adding actor to composite actors is ok if the actor is already in the world    
     Removing child from composite actor can leave in the world
@@ -33,12 +33,12 @@ What's New
 0.2.5
     Added Screenshot behaviour
     Behavior manager can now register all events in a module
-    Can register multiple sprites from single tileset
+    Can register multiple sprites from single tile-set
     Transparency works properly now for Rectangles and Circles
     Fixed bug with size of actor not updating after zooming
     Sprites can be registered by file pattern 
     Rotations now use filtering for improved quality
-    Added MovieMaker util to help recording gameplay
+    Added MovieMaker util to help recording game-play
     Support rotation of Mounted Actors without pymunk
 0.2.6
     Added MuteButton and utility to add to many worlds
@@ -64,7 +64,7 @@ What's New
     Added behaviour to move an actor with a constant velocity
 0.3.4
     Added duplicateItem method to registry to allow creation of aliased items
-    Implemented a dragndrop block to help with drag and drop operations
+    Implemented a drag-n-drop block to help with drag and drop operations
     Added a finite state machine block
     forEach iteration can now work with setting attributes as well as method calls
     Added a spring towards point behaviour
@@ -84,7 +84,7 @@ What's New
     Includes documentation and two tutorials
 0.4.1
     Fixed bug in MuteButton - would always mute music regardless of the flag setting
-    Fixed bug in Sound - pause/unpause behaviour was not working properly for sounds (ok for music)
+    Fixed bug in Sound - pause/un-pause behaviour was not working properly for sounds (ok for music)
     Added SoundTexture block to create sounds textures that depend on the location of actors etc
     Allowing converting alpha mode of sprites to drastically improve blitting
     Added profiler for collecting detailed timing from the engine
@@ -109,3 +109,4 @@ What's New
 0.4.4
     Added hasItem method to Registry
     AchievementsManager can reset the achievements
+    Fixed bug in AchievementsGrid layers

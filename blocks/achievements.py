@@ -207,7 +207,7 @@ class AchievementManager(serge.serialize.Serializable, serge.common.Loggable, se
 
 
 class AchievementBanner(serge.actor.MountableActor):
-    """A banner to show an achievment"""
+    """A banner to show an achievement"""
 
     def __init__(self, tag, name, background_layer, foreground_layer, behaviours, theme):
         """Initialise the AchievementBanner"""
@@ -266,14 +266,14 @@ class AchievementBanner(serge.actor.MountableActor):
         self.visible = True
 
     def hideMe(self, world, actor, interval):
-        """Hide ourself"""
+        """Hide this object"""
         self.hider.pause()
         self.log.debug('Hiding achievement')
         self.visible = False
 
 
 class AchievementStatus(serge.actor.MountableActor):
-    """A banner to show an achievment"""
+    """A banner to show an achievement"""
 
     def __init__(self, tag, name, background_layer, foreground_layer, achievement, G):
         """Initialise the AchievementStatus"""
@@ -295,10 +295,11 @@ class AchievementStatus(serge.actor.MountableActor):
         bg.setLayerName(self.background_layer)
         self.mountActor(bg, (0, 0))
         #
-        self.name = name = serge.blocks.actors.StringText('banner', 'banner-name', 'Name',
-                                                          colour=G('banner-font-colour'),
-                                                          font_size=G('banner-name-size'),
-                                                          font_name=G('banner-font-name'), justify='left')
+        self.name = name = serge.blocks.actors.StringText(
+            'banner', 'banner-name', 'Name',
+            colour=G('banner-font-colour'),
+            font_size=G('banner-name-size'),
+            font_name=G('banner-font-name'), justify='left')
         name.setLayerName(self.foreground_layer)
         self.mountActor(name, G('banner-name-position'))
         #
@@ -368,16 +369,18 @@ class AchievementsGrid(serge.blocks.actors.ScreenActor):
         #
         # Place things in grid
         for achievement in self.manager.getAchievements():
-            grid.autoAddActor(AchievementStatus('status', 'status', 'ui', 'background', achievement, self.G))
-            #
+            grid.autoAddActor(AchievementStatus('status', 'status', 'background', 'ui', achievement, self.G))
+        #
         world.linkEvent(serge.events.E_ACTIVATE_WORLD, self.updateAchievements)
         #
         self.back = serge.blocks.utils.addActorToWorld(
             world,
-            serge.blocks.actors.StringText('back', 'back',
-                                           'Back', colour=G('back-colour'),
-                                           font_size=G('back-font-size'),
-                                           font_name=G('back-font-name')),
+            serge.blocks.actors.StringText(
+                'back', 'back',
+                'Back', colour=G('back-colour'),
+                font_size=G('back-font-size'),
+                font_name=G('back-font-name')
+            ),
             center_position=G('back-position'), layer_name='ui')
         self.back.linkEvent(serge.events.E_LEFT_CLICK, serge.blocks.utils.backToPreviousWorld(G('back-sound')))
 
