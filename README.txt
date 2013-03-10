@@ -108,3 +108,4 @@ What's New
     Added new Storage block to handle SQL storage of game data
 0.4.4
     Added hasItem method to Registry
+    AchievementsManager can reset the achievements

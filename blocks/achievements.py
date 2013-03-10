@@ -15,16 +15,34 @@ import os
 
 import serge.serialize
 import serge.common
+import serge.events
+import serge.actor
+import serge.engine
 import serge.blocks.actors
 import serge.blocks.layout
+import serge.blocks.utils
+import serge.blocks.behaviours
+import serge.blocks.visualblocks
+
 
 # Events
 E_ACHIEVEMENT_MET = 'achievement-met'
 
-class DuplicateAchievement(Exception): """An achievement with this name already exists"""
-class BadReport(Exception): """An error occured while evaluating the report"""
-class BadTestType(Exception): """The test type was not found"""
-class BadCondition(Exception): """The condition was not valid"""
+
+class DuplicateAchievement(Exception):
+    """An achievement with this name already exists"""
+
+
+class BadReport(Exception):
+    """An error occurred while evaluating the report"""
+
+
+class BadTestType(Exception):
+    """The test type was not found"""
+
+
+class BadCondition(Exception):
+    """The condition was not valid"""
 
 
 class Achievement(serge.serialize.Serializable):
@@ -59,8 +77,7 @@ class Achievement(serge.serialize.Serializable):
         self.condition = condition
         self.condition_string = condition_string
         self.init()
-        
-        
+
     def init(self):
         """Initialise the achievement from pickling"""
         super(Achievement, self).init()
@@ -75,9 +92,10 @@ class Achievement(serge.serialize.Serializable):
                         self.condition_string, self.name))
         else:
             if self.condition_string:
-                raise BadCondition('Cannot specify both condition and condition_string for achievement "%s"' % self.name)
+                raise BadCondition(
+                    'Cannot specify both condition and condition_string for achievement "%s"' % self.name)
             self._condition = self.condition
-            
+
     def makeReport(self, **kw):
         """Make a report on this achievement"""
         # Short circuit if we are met
@@ -92,11 +110,17 @@ class Achievement(serge.serialize.Serializable):
             return True
         else:
             return False
-            
+
     def isMet(self):
         """Return True if the achievement was met"""
         return self.met
-              
+
+    def resetStatus(self):
+        """Reset the status of the achievement"""
+        self.met = False
+        self.time = 0
+
+
 class AchievementManager(serge.serialize.Serializable, serge.common.Loggable, serge.common.EventAware):
     """Manages all the achievements in the game"""
 
@@ -104,11 +128,11 @@ class AchievementManager(serge.serialize.Serializable, serge.common.Loggable, se
         serge.serialize.O('achievements', {}, 'the list of achievements'),
     )
 
-    def __init__(self,):
+    def __init__(self, ):
         """Initialise the AchievementManager"""
         self.achievements = {}
         self.init()
-        
+
     def init(self):
         """Initialise"""
         super(AchievementManager, self).init()
@@ -117,7 +141,7 @@ class AchievementManager(serge.serialize.Serializable, serge.common.Loggable, se
         for achievement in self.getAchievements():
             achievement.init()
         self.filename = None
-        
+
     def registerAchievement(self, achievement):
         """Register an achievement"""
         existing = self.achievements.setdefault(achievement.test_type, {})
@@ -134,27 +158,27 @@ class AchievementManager(serge.serialize.Serializable, serge.common.Loggable, se
             self.registerAchievement(achievement)
         except DuplicateAchievement:
             pass
-            
+
     def makeReport(self, test_type, **kw):
         """Make a report on achievements"""
         try:
             achievements = self.achievements[test_type].values()
         except KeyError:
             raise BadTestType('The test type "%s" was not found' % test_type)
-        #
+            #
         for achievement in achievements:
             if achievement.makeReport(**kw):
                 self.log.info('Achievement "%s" has been met' % achievement.name)
                 self.processEvent((E_ACHIEVEMENT_MET, achievement))
                 if self.filename:
                     self.saveAchievements()
-                
+
     def getAchievements(self):
         """Return the list of achievements"""
         ret = []
         for items in self.achievements.values():
             ret.extend(items.values())
-        return sorted(ret, lambda a, b : cmp(a.index, b.index))
+        return sorted(ret, lambda a, b: cmp(a.index, b.index))
 
     def initialiseFromFile(self, filename):
         """Initialise from the file"""
@@ -167,10 +191,20 @@ class AchievementManager(serge.serialize.Serializable, serge.common.Loggable, se
         else:
             self.log.info('New achievements file at %s' % the_filename)
         self.filename = the_filename
-        
+
+    def resetAchievements(self):
+        """Reset all the achievements so that they have not been met"""
+        self.log.debug('Resetting status of achievements')
+        for achievements in self.achievements.values():
+            for achievement in achievements.values():
+                achievement.resetStatus()
+        if self.filename:
+            self.saveAchievements()
+
     def saveAchievements(self):
         """Save achievements to a file"""
         self.toFile(self.filename)
+
 
 class AchievementBanner(serge.actor.MountableActor):
     """A banner to show an achievment"""
@@ -180,11 +214,11 @@ class AchievementBanner(serge.actor.MountableActor):
         super(AchievementBanner, self).__init__(tag, name)
         G = self.G = theme.getTheme('achievements').getProperty
         self.background_layer = background_layer
-        self.foreground_layer = foreground_layer 
+        self.foreground_layer = foreground_layer
         self.hider = behaviours.assignBehaviour(
-            self, serge.blocks.behaviours.TimedCallback(G('banner-duration')*1000, self.hideMe), 'hiding')
+            self, serge.blocks.behaviours.TimedCallback(G('banner-duration') * 1000, self.hideMe), 'hiding')
         self.hider.pause()
-        
+
     def addedToWorld(self, world):
         """Added the banner to the world"""
         super(AchievementBanner, self).addedToWorld(world)
@@ -192,21 +226,25 @@ class AchievementBanner(serge.actor.MountableActor):
         #
         # Create the widgets
         bg = serge.actor.Actor('banner', 'background')
-        bg.visual = serge.blocks.visualblocks.Rectangle(G('banner-size'), 
-            G('banner-backcolour'))
+        bg.visual = serge.blocks.visualblocks.Rectangle(G('banner-size'),
+                                                        G('banner-backcolour'))
         bg.setLayerName(self.background_layer)
         self.mountActor(bg, (0, 0))
         #
         self.name = name = serge.blocks.actors.StringText('banner', 'banner-name', 'Name',
-            colour=G('banner-font-colour'), font_size=G('banner-name-size'),
-            font_name=G('banner-font-name'), justify='left')
+                                                          colour=G('banner-font-colour'),
+                                                          font_size=G('banner-name-size'),
+                                                          font_name=G('banner-font-name'), justify='left')
         name.setLayerName(self.foreground_layer)
         self.mountActor(name, G('banner-name-position'))
         #
-        self.description = description = serge.blocks.actors.StringText('banner', 'banner-description', 
+        self.description = description = serge.blocks.actors.StringText(
+            'banner', 'banner-description',
             'Description of the achievement as it\nis written down.',
-            colour=G('banner-font-colour'), font_size=G('banner-description-size'),
-            font_name=G('banner-font-name'), justify='left')
+            colour=G('banner-font-colour'),
+            font_size=G('banner-description-size'),
+            font_name=G('banner-font-name'), justify='left'
+        )
         description.setLayerName(self.foreground_layer)
         self.mountActor(description, G('banner-description-position'))
         #
@@ -217,7 +255,7 @@ class AchievementBanner(serge.actor.MountableActor):
         self.mountActor(graphic, G('banner-graphic-position'))
         #
         self.visible = False
-        
+
     def meetAchievement(self, achievement, arg):
         """An achievement is met"""
         self.name.value = achievement.name
@@ -226,12 +264,13 @@ class AchievementBanner(serge.actor.MountableActor):
             self.hider.restart()
         self.log.debug('Showing achievement')
         self.visible = True
-        
+
     def hideMe(self, world, actor, interval):
         """Hide ourself"""
         self.hider.pause()
         self.log.debug('Hiding achievement')
         self.visible = False
+
 
 class AchievementStatus(serge.actor.MountableActor):
     """A banner to show an achievment"""
@@ -241,9 +280,9 @@ class AchievementStatus(serge.actor.MountableActor):
         super(AchievementStatus, self).__init__(tag, name)
         self.G = G
         self.background_layer = background_layer
-        self.foreground_layer = foreground_layer 
+        self.foreground_layer = foreground_layer
         self.achievement = achievement
-        
+
     def addedToWorld(self, world):
         """Added the banner to the world"""
         super(AchievementStatus, self).addedToWorld(world)
@@ -251,20 +290,23 @@ class AchievementStatus(serge.actor.MountableActor):
         #
         # Create the widgets
         bg = serge.actor.Actor('banner', 'background')
-        bg.visual = serge.blocks.visualblocks.Rectangle(G('banner-size'), 
-            G('banner-backcolour'))
+        bg.visual = serge.blocks.visualblocks.Rectangle(G('banner-size'),
+                                                        G('banner-backcolour'))
         bg.setLayerName(self.background_layer)
         self.mountActor(bg, (0, 0))
         #
         self.name = name = serge.blocks.actors.StringText('banner', 'banner-name', 'Name',
-            colour=G('banner-font-colour'), font_size=G('banner-name-size'),
-            font_name=G('banner-font-name'), justify='left')
+                                                          colour=G('banner-font-colour'),
+                                                          font_size=G('banner-name-size'),
+                                                          font_name=G('banner-font-name'), justify='left')
         name.setLayerName(self.foreground_layer)
         self.mountActor(name, G('banner-name-position'))
         #
-        self.description = description = serge.blocks.actors.StringText('banner', 'banner-description', 
+        self.description = description = serge.blocks.actors.StringText(
+            'banner', 'banner-description',
             'Description of the achievement as it\nis written down.',
-            colour=G('banner-font-colour'), font_size=G('banner-description-size'),
+            colour=G('banner-font-colour'),
+            font_size=G('banner-description-size'),
             font_name=G('banner-font-name'), justify='left')
         description.setLayerName(self.foreground_layer)
         self.mountActor(description, G('banner-description-position'))
@@ -276,13 +318,14 @@ class AchievementStatus(serge.actor.MountableActor):
         self.mountActor(graphic, G('banner-graphic-position'))
         #
         self.time = time = serge.blocks.actors.StringText('banner', 'banner-time',
-            'Time achieved', colour=G('time-colour'), font_size=G('time-size'), font_name=G('banner-font-name'),
-            justify='left')
+                                                          'Time achieved', colour=G('time-colour'),
+                                                          font_size=G('time-size'), font_name=G('banner-font-name'),
+                                                          justify='left')
         time.setLayerName(self.foreground_layer)
         self.mountActor(time, G('time-position'))
         #
         self.updateAchievement()
-                
+
     def updateAchievement(self):
         """Update the achievement view"""
         self.name.value = self.achievement.name
@@ -293,7 +336,7 @@ class AchievementStatus(serge.actor.MountableActor):
         else:
             self.time.value = ''
 
-        
+
 class AchievementsGrid(serge.blocks.actors.ScreenActor):
     """A grid to show achievements"""
 
@@ -302,38 +345,42 @@ class AchievementsGrid(serge.blocks.actors.ScreenActor):
         super(AchievementsGrid, self).__init__('achievements', 'grid')
         self.G = G
         self.manager = getManager()
-                
+
     def addedToWorld(self, world):
         """Added the grid to the world"""
         super(AchievementsGrid, self).addedToWorld(world)
         G = self.G
         #
         # Logo
-        logo = serge.blocks.utils.addSpriteActorToWorld(world, 'logo', 'logo', 'logo', 
-            'ui', G('logo-position'))
+        logo = serge.blocks.utils.addSpriteActorToWorld(
+            world, 'logo', 'logo', 'logo', 'ui', G('logo-position'))
         #
         # Bg
-        bg = serge.blocks.utils.addSpriteActorToWorld(world, 'bg', 'bg', G('screen-background-sprite'), 
-            'background', G('screen-background-position'))        
+        bg = serge.blocks.utils.addSpriteActorToWorld(
+            world, 'bg', 'bg', G('screen-background-sprite'), 'background', G('screen-background-position'))
         #
         # The grid
-        self.grid = grid = serge.blocks.utils.addActorToWorld(world,
-            serge.blocks.layout.Grid('grid', 'grid', size=G('grid-size'), width=G('grid-width'),
-                height=G('grid-height')),
-            center_position=G('grid-position'), layer_name='ui')
+        self.grid = grid = serge.blocks.utils.addActorToWorld(
+            world,
+            serge.blocks.layout.Grid(
+                'grid', 'grid', size=G('grid-size'),width=G('grid-width'),
+                height=G('grid-height')), center_position=G('grid-position'), layer_name='ui')
         #
         # Place things in grid
         for achievement in self.manager.getAchievements():
             grid.autoAddActor(AchievementStatus('status', 'status', 'ui', 'background', achievement, self.G))
-        #
+            #
         world.linkEvent(serge.events.E_ACTIVATE_WORLD, self.updateAchievements)
         #
-        self.back = serge.blocks.utils.addActorToWorld(world,
+        self.back = serge.blocks.utils.addActorToWorld(
+            world,
             serge.blocks.actors.StringText('back', 'back',
-                'Back', colour=G('back-colour'), font_size=G('back-font-size'), font_name=G('back-font-name')),
-                center_position=G('back-position'), layer_name='ui')
+                                           'Back', colour=G('back-colour'),
+                                           font_size=G('back-font-size'),
+                                           font_name=G('back-font-name')),
+            center_position=G('back-position'), layer_name='ui')
         self.back.linkEvent(serge.events.E_LEFT_CLICK, serge.blocks.utils.backToPreviousWorld(G('back-sound')))
-       
+
     def updateAchievements(self, obj, arg):
         """Update all achievements"""
         for status in self.grid.getChildren():
@@ -356,25 +403,28 @@ def addAchievementsWorld(options, theme):
     s.options = options
     world.addActor(s)
     #
-    # Snapshotting
+    # Snap shots
     if options.screenshot:
-        manager.assignBehaviour(None, 
-            serge.blocks.behaviours.SnapshotOnKey(key=pygame.K_s, size=G('screenshot-size')
-                ,overwrite=False, location='screenshots'), 'screenshot')
-    
+        manager.assignBehaviour(None,
+                                serge.blocks.behaviours.SnapshotOnKey(key=pygame.K_s, size=G('screenshot-size')
+                                    , overwrite=False, location='screenshots'), 'screenshot')
+
+
 def addAchievementsBannerToWorld(world, front_layer, back_layer, theme, manager):
     """Add a banner for achievements to the world"""
-    banner = serge.blocks.achievements.AchievementBanner('banner', 'banner', 
-        back_layer, front_layer, manager, theme)
+    banner = AchievementBanner('banner', 'banner', back_layer, front_layer, manager, theme)
     world.addActor(banner)
     banner.moveTo(*theme.getProperty('banner-position', 'achievements'))
-    getManager().linkEvent(serge.blocks.achievements.E_ACHIEVEMENT_MET, banner.meetAchievement)
+    getManager().linkEvent(E_ACHIEVEMENT_MET, banner.meetAchievement)
 
 
 # A global achievements manager        
 _Manager = AchievementManager()
+
+
 def getManager():
     return _Manager
+
 
 def initManager(name):
     """Initialise and return the manager"""

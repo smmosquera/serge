@@ -835,7 +835,7 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         b.addActor((0, 0), a1)
         b.moveActor((1, 1), a1)
         self.assertEqual({a1}, set(b.getActorsAt((1, 1))))
-        self.assertEqual({}, set(b.getActorsAt((0, 0))))
+        self.assertEqual(set(), set(b.getActorsAt((0, 0))))
 
     def testFailMoveMultiGridOutOfRange(self):
         """testFailMoveMultiGridOutOfRange: should fail when moving actor in grid out of range"""
@@ -1674,6 +1674,8 @@ class TestAchievements(unittest.TestCase):
 
     def tearDown(self):
         """Tear down the tests"""
+        if self.a.filename:
+            os.remove(self.a.filename)
 
     def testCanRegisterSimpleAchievement(self):
         """testCanRegisterSimpleAchievement: should be able to register a simple achievement"""
@@ -1736,6 +1738,59 @@ class TestAchievements(unittest.TestCase):
         self.assertFalse(b.getAchievements()[1].isMet())
         b.makeReport('test2', x=11)
         self.assertTrue(b.getAchievements()[1].isMet())
+
+    def testCanLoadFromFileFile(self):
+        """testCanLoadFromFileFile: should be able to load the achievements file"""
+        #
+        # Create some achievements
+        self.a.initialiseFromFile('test_achievements.db')
+        ach1 = serge.blocks.achievements.Achievement(name='one', description='description', badge='badge', secret=False,
+                                                     condition_string='x : x>10', test_type='test1')
+        ach2 = serge.blocks.achievements.Achievement(name='two', description='description', badge='badge', secret=False,
+                                                     condition_string='x : x>10', test_type='test2')
+        self.a.registerAchievement(ach1)
+        self.a.registerAchievement(ach2)
+        self.a.makeReport('test1', x=11)
+        #
+        # File should have been saved
+        b = serge.blocks.achievements.AchievementManager()
+        b.initialiseFromFile('test_achievements.db')
+        #
+        self.assertEqual('one', b.getAchievements()[0].name)
+        self.assertEqual('two', b.getAchievements()[1].name)
+        self.assertTrue(b.getAchievements()[0].isMet())
+        self.assertFalse(b.getAchievements()[1].isMet())
+
+    def testCanResetAchievementsFile(self):
+        """testCanResetAchievementsFile: should be able to reset the achievements file"""
+        #
+        # Create some achievements
+        self.a.initialiseFromFile('test_achievements.db')
+        ach1 = serge.blocks.achievements.Achievement(name='one', description='description', badge='badge', secret=False,
+                                                     condition_string='x : x>10', test_type='test1')
+        ach2 = serge.blocks.achievements.Achievement(name='two', description='description', badge='badge', secret=False,
+                                                     condition_string='x : x>10', test_type='test2')
+        self.a.registerAchievement(ach1)
+        self.a.registerAchievement(ach2)
+        self.a.makeReport('test1', x=11)
+        #
+        # Now reset the file
+        self.a.resetAchievements()
+        #
+        # Achievements should exist but be reset
+        self.assertEqual('one', self.a.getAchievements()[0].name)
+        self.assertEqual('two', self.a.getAchievements()[1].name)
+        self.assertFalse(self.a.getAchievements()[0].isMet())
+        self.assertFalse(self.a.getAchievements()[1].isMet())
+        #
+        # And the file should be serialized
+        b = serge.blocks.achievements.AchievementManager()
+        b.initialiseFromFile('test_achievements.db')
+        #
+        self.assertEqual('one', b.getAchievements()[0].name)
+        self.assertEqual('two', b.getAchievements()[1].name)
+        self.assertFalse(b.getAchievements()[0].isMet())
+        self.assertFalse(b.getAchievements()[1].isMet())
 
     def testCanSerializeComplexAchievements(self):
         """testCanSerializeComplexAchievements: should be able to serialize complex achievements"""
