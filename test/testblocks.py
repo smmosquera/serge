@@ -800,8 +800,8 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         b.addActor((0, 0), a2)
         b.addActor((1, 1), a3)
         #
-        self.assertEqual(set([a1, a2]), set(b.getActorsAt((0, 0))))
-        self.assertEqual(set([a3]), set(b.getActorsAt((1, 1))))
+        self.assertEqual({a1, a2}, set(b.getActorsAt((0, 0))))
+        self.assertEqual({a3}, set(b.getActorsAt((1, 1))))
         #
         # Get Actors at shouldn't raise
         self.assertEqual([], b.getActorsAt((1, 0)))
@@ -809,7 +809,6 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         # Adding out of range raises
         self.assertRaises(serge.blocks.layout.OutOfRange, b.addActor, (5, 5), a4)
         self.assertRaises(serge.blocks.layout.OutOfRange, b.addActor, (-1, -1), a4)
-
 
     def testGetActorsAtReturnsNewList(self):
         """testGetActorsAtReturnsNewList: should return a new list from get actors at"""
@@ -824,9 +823,9 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         b.addActor((1, 1), a3)
         #
         result = b.getActorsAt((0, 0))
-        self.assertEqual(set([a1, a2]), set(result))
+        self.assertEqual({a1, a2}, set(result))
         result[:] = []
-        self.assertEqual(set([a1, a2]), set(b.getActorsAt((0, 0))))
+        self.assertEqual({a1, a2}, set(b.getActorsAt((0, 0))))
 
     def testCanMoveMultiGrid(self):
         """testCanMoveMultiGrid: should be able to move an actor from a multigrid"""
@@ -835,8 +834,8 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         a1 = self.getActor(s, 'a1')
         b.addActor((0, 0), a1)
         b.moveActor((1, 1), a1)
-        self.assertEqual(set([a1]), set(b.getActorsAt((1, 1))))
-        self.assertEqual(set([]), set(b.getActorsAt((0, 0))))
+        self.assertEqual({a1}, set(b.getActorsAt((1, 1))))
+        self.assertEqual({}, set(b.getActorsAt((0, 0))))
 
     def testFailMoveMultiGridOutOfRange(self):
         """testFailMoveMultiGridOutOfRange: should fail when moving actor in grid out of range"""
@@ -887,8 +886,8 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         #
         b.removeActor((0, 0), a1)
         #
-        self.assertEqual(set([a2]), set(b.getActorsAt((0, 0))))
-        self.assertEqual(set([a3]), set(b.getActorsAt((1, 1))))
+        self.assertEqual({a2}, set(b.getActorsAt((0, 0))))
+        self.assertEqual({a3}, set(b.getActorsAt((1, 1))))
 
     def testFailRemoveActorMult(self):
         """testFailRemoveActorMult: should fail trying to remove an actor that isn't there"""
@@ -900,7 +899,6 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         #
         self.assertRaises(serge.blocks.layout.UnknownActor, b.removeActor, (0, 0), a1)
         self.assertRaises(serge.blocks.layout.UnknownActor, b.removeActor, (1, 1), a1)
-
 
     def testCanRemoveActorsMulti(self):
         """testCanRemoveActorsMulti: should be able to remove all actors from a multi"""
@@ -916,7 +914,7 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         b.removeActors((0, 0))
         #
         self.assertEqual([], b.getActorsAt((0, 0)))
-        self.assertEqual(set([a3]), set(b.getActorsAt((1, 1))))
+        self.assertEqual({a3}, set(b.getActorsAt((1, 1))))
 
     def testRemoveActorsMultiRemovesFromWorld(self):
         """testRemoveActorsMultiRemovesFromWorld: should remove actors from world when removing actors"""
@@ -1001,7 +999,6 @@ class TestEffectsBlocks(unittest.TestCase, VisualTester):
         self.z1.active = True
         self.w.addZone(self.z1)
 
-
     def tearDown(self):
         """Tear down the tests"""
 
@@ -1055,7 +1052,6 @@ class TestEffectsBlocks(unittest.TestCase, VisualTester):
         fade.finish()
         self.w.updateWorld(1000)
         self.assertEqual(10, a.counter)
-
 
     def testCanPersistAnEffect(self):
         """testCanPersistAnEffect: should be able to keep an effect persistent"""
@@ -1178,7 +1174,6 @@ class TestScoreBlocks(unittest.TestCase):
 
     def setUp(self):
         """Set up the tests"""
-
 
     def tearDown(self):
         """Tear down the tests"""
@@ -1585,7 +1580,6 @@ class TestVisualEffects(unittest.TestCase, VisualTester):
         self.r.addLayer(self.l)
         serge.visual.Register.clearItems()
 
-
     def tearDown(self):
         """Tear down the tests"""
 
@@ -1634,7 +1628,6 @@ class TestDirections(unittest.TestCase):
 
     def setUp(self):
         """Set up the tests"""
-
 
     def tearDown(self):
         """Tear down the tests"""
@@ -1711,7 +1704,7 @@ class TestAchievements(unittest.TestCase):
                                                      condition=lambda x: x > 10, test_type='test')
         self.a.registerAchievement(ach1)
         self.a.registerAchievement(ach2)
-        self.assertEqual(set([ach1, ach2]), set(self.a.getAchievements()))
+        self.assertEqual({ach1, ach2}, set(self.a.getAchievements()))
 
     def testAchievementsListIsOrderedByAdding(self):
         """testAchievementsListIsOrderedByAdding: order of adding achievements should be retained"""
