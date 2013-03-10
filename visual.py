@@ -584,6 +584,7 @@ class Text(Drawing):
         self.font = pygame.font.Font(self.font_path, font_size)
         self.setText(text)
         self.justify = justify
+        self.colour_key = (127, 127, 127)
         
     def setJustify(self, justify):
         """Set the justification"""
@@ -607,7 +608,12 @@ class Text(Drawing):
         height = self.font.get_height()
         #
         # Now make a surface
-        self.surface = pygame.Surface((width, height*len(lines)), pygame.SRCALPHA, 32)
+        if not self.convert_alpha:
+            self.surface = pygame.Surface((width, height*len(lines)), pygame.SRCALPHA, 32)
+        else:
+            self.surface = pygame.Surface((width, height*len(lines)))
+            self.surface.fill(self.colour_key)
+            self.surface.set_colorkey(self.colour_key)
         #
         # And write all our text
         for idx, line in enumerate(lines):
@@ -638,7 +644,10 @@ class Text(Drawing):
     def setAlpha(self, alpha):
         """Set our alpha"""
         self.setText(self.text)
-        self._setAlphaForSurface(self.surface, alpha)
+        if self.convert_alpha:
+            self.surface.set_alpha(alpha * 255)
+        else:
+            self._setAlphaForSurface(self.surface, alpha)
         self._alpha = alpha
         
     def renderTo(self, milliseconds, surface, (x, y)):
@@ -657,7 +666,11 @@ class Text(Drawing):
         """Scale our sprite by a certain certain amount"""
         self.setFontSize(self.font_size*scale)
         
-        
+    def convertAlpha(self, color_key=(127, 127, 127)):
+        """Convert this text to an surface alpha"""
+        self.convert_alpha = True
+        self.setText(self.text)
+
 ### Fonts ###
 
 

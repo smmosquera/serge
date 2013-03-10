@@ -94,8 +94,16 @@ class AnimatedActor(serge.actor.Actor):
 
     def restartAnimations(self):
         """Restart all animations"""
+        self._paused = False
         for animation in self.getAnimations():
             animation.restart()
+
+    def completeAnimations(self):
+        """Complete all animations"""
+        self._paused = True
+        for animation in self.getAnimations():
+            animation.finish()
+            animation.update()
 
     def updateActor(self, interval, world):
         """Update the actor"""
@@ -141,6 +149,7 @@ class Animation(serge.blocks.effects.Effect):
     def restart(self):
         """Restart the animation"""
         self._initProperties()
+        self.update()
 
     def updateActor(self, interval, world):
         """Update the animation effect"""
@@ -170,7 +179,8 @@ class Animation(serge.blocks.effects.Effect):
 
     def finish(self):
         """Finish the effect"""
-        super(Animation, self).finish()
+        self.current = self.end
+        self.fraction = 1.0
         self._effectComplete(None)
         self.complete = True
 
@@ -180,3 +190,44 @@ class Animation(serge.blocks.effects.Effect):
         This is the method you should implement
 
         """
+
+#
+# Now we have some specific examples of useful animations
+
+
+class ColourCycle(Animation):
+    """Animate the colour property of an object between a beginning and end"""
+
+    def __init__(self, obj, start_colour, end_colour, duration,
+                 attribute='colour', loop=False, done=None):
+        """Initialise the animation"""
+        super(ColourCycle, self).__init__(duration, loop=loop, done=done)
+        #
+        self.obj = obj
+        self.start_colour = start_colour
+        self.end_colour = end_colour
+        self.attribute = attribute
+
+    def update(self):
+        """Update the colour of the object"""
+        #
+        # Work out the values for each element of the colour
+        colours = []
+        for x, y in zip(self.start_colour, self.end_colour):
+            colours.append(float(x + (y - x) * self.fraction))
+        #
+        self.setColour(tuple(colours))
+
+    def setColour(self, colour):
+        """Set the colour"""
+        setattr(self.obj, self.attribute, colour)
+
+
+class ColourText(ColourCycle):
+    """Animate the colour of a text object by calling its setColour method"""
+
+    def setColour(self, colour):
+        """Set the colour"""
+        self.obj.setColour(colour)
+        if len(colour) == 4:
+            self.obj.setAlpha(float(colour[-1]) / 255)

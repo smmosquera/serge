@@ -4,6 +4,7 @@ import unittest
 
 import serge.zone
 import serge.blocks.animations
+import serge.blocks.actors
 
 from helper import *
 
@@ -126,6 +127,32 @@ class TestAnimations(unittest.TestCase, VisualTester):
         self.assertEqual(0, c1.iteration)
         self.assertEqual(0, c2.iteration)
 
+    def testRestartUnpause(self):
+        """testRestartUnpause: restarting animations will unpause them"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        c2 = self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.a.pauseAnimations()
+        self.a.restartAnimations()
+        self.z.updateZone(1000, None)
+        self.assertEqual(1, c1.iteration)
+        self.assertEqual(1, c2.iteration)
+
+    def testRestartWillCallUpdate(self):
+        """testRestartWillCallUpdate: restarting will call an update"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        self.assertEqual(0, c1.iteration)
+        self.assertEqual(0, self.a.iteration)
+        self.a.restartAnimations()
+        self.assertEqual(0, c1.iteration)
+        self.assertEqual(1, self.a.iteration)
+
+    def testCanCompleteAnimations(self):
+        """testCanCompleteAnimations: should be able to complete the animations"""
+        c1 = self.a.addAnimation(TestAnimation(1000), 'cycle-1')
+        self.a.completeAnimations()
+        self.assertEqual(1000, c1.current)
+        self.assertEqual(1, self.a.iteration)
+
     def testCanGetAnimation(self):
         """testCanGetAnimation: should be able to get an animation"""
         animation = self.a.addAnimation(TestAnimation(), 'cycle')
@@ -228,6 +255,45 @@ class TestAnimations(unittest.TestCase, VisualTester):
         self.assertEqual(0.5, c1.fraction)
         self.assertFalse(c1.complete)
         self.assertEqual(-1, c1.direction)
+
+
+class TestSpecificAnimations(unittest.TestCase, VisualTester):
+    """Tests for the SpecificAnimations"""
+
+    def setUp(self):
+        """Set up the tests"""
+        self.z = serge.zone.Zone()
+
+    def tearDown(self):
+        """Tear down the tests"""
+
+    def testColourCycle(self):
+        """testColourCycle: test of the colour cycling animation"""
+        a = serge.blocks.actors.StringText('a', 'a', 'Test')
+        self.z.addActor(a)
+        #
+        colour = serge.blocks.animations.ColourCycle(
+            obj=a.visual,
+            attribute='colour',
+            start_colour=(0, 255, 0, 100),
+            end_colour=(255, 0, 0, 200),
+            duration=10000,
+            loop=True
+        )
+        a.addAnimation(colour, 'colour-cycle')
+        #
+        self.z.updateZone(0, None)
+        self.assertEqual((0, 255, 0, 100), a.visual.colour)
+        self.z.updateZone(5000, None)
+        self.assertEqual((255. / 2, 255. / 2, 0, 150), a.visual.colour)
+        self.z.updateZone(5000, None)
+        self.assertEqual((255, 0, 0, 200), a.visual.colour)
+        self.z.updateZone(5000, None)
+        self.assertEqual((255. / 2, 255. / 2, 0, 150), a.visual.colour)
+        self.z.updateZone(5000, None)
+        self.assertEqual((0, 255, 0, 100), a.visual.colour)
+        self.z.updateZone(5000, None)
+        self.assertEqual((255. / 2, 255. / 2, 0, 150), a.visual.colour)
 
 
 class TestAnimation(serge.blocks.animations.Animation):

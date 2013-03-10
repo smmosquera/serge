@@ -11,6 +11,7 @@ import serge.sound
 import serge.blocks.behaviours
 import serge.blocks.visualblocks
 import serge.blocks.behaviours
+import serge.blocks.animations
 
 
 class InvalidMenu(Exception): """The menu was not valid"""
@@ -133,7 +134,7 @@ class RepeatedVisualActor(serge.actor.Actor):
         self.setRepeat(self._repeat)
         
         
-class FormattedText(serge.actor.Actor):
+class FormattedText(serge.blocks.animations.AnimatedActor):
     """A text display that can be formatted"""
 
     def __init__(self, tag, name, format, colour, font_name='DEFAULT', font_size=12, justify='center', **kw):
