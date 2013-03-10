@@ -1,0 +1,252 @@
+"""Tests for the animations"""
+
+import unittest
+
+import serge.zone
+import serge.blocks.animations
+
+from helper import *
+
+
+class TestAnimations(unittest.TestCase, VisualTester):
+    """Tests for the Animations"""
+
+    def setUp(self):
+        """Set up the tests"""
+        self.a = TestAnimatedActor('a', 'a')
+        self.b = TestAnimatedActor('b', 'b')
+        self.c = TestAnimatedActor('c', 'c')
+        self.d = TestAnimatedActor('d', 'd')
+        self.z = serge.zone.Zone()
+        self.z.addActor(self.a)
+        self.z.addActor(self.b)
+        self.z.addActor(self.c)
+        self.z.addActor(self.d)
+
+    def tearDown(self):
+        """Tear down the tests"""
+
+    def _updateActors(self, interval):
+        """Update all the actors"""
+
+    def testCanAddAnimation(self):
+        """testCanAddAnimation: should be able to add an animation"""
+        self.a.addAnimation(TestAnimation(), 'cycle')
+        self.z.updateZone(1000, None)
+        self.z.updateZone(1000, None)
+        self.assertEqual(2, self.a.iteration)
+
+    def testCanAddMultipleAnimations(self):
+        """testCanAddMultipleAnimations: should be able to add multiple animations"""
+        self.a.addAnimation(TestAnimation(), 'cycle-1')
+        self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.z.updateZone(1000, None)
+        self.z.updateZone(1000, None)
+        self.assertEqual(4, self.a.iteration)
+
+    def testFailAddingAnimationWithSameName(self):
+        """testFailAddingAnimationWithSameName: should fail if add animation with the same name"""
+        self.a.addAnimation(TestAnimation(), 'cycle')
+        self.assertRaises(serge.blocks.animations.AnimationExists,
+                          self.a.addAnimation, TestAnimation(), 'cycle')
+
+    def testCanRemoveAnimation(self):
+        """testCanRemoveAnimation: should be able to remove an animation"""
+        self.a.addAnimation(TestAnimation(), 'cycle')
+        self.z.updateZone(1000, None)
+        self.a.removeAnimation('cycle')
+        self.z.updateZone(1000, None)
+        self.assertEqual(1, self.a.iteration)
+
+    def testCanRemoveAnimationByObject(self):
+        """testCanRemoveAnimationByObject: should be able to remove an animation from the object"""
+        animation = self.a.addAnimation(TestAnimation(), 'cycle')
+        self.z.updateZone(1000, None)
+        self.a.removeAnimation(animation.name)
+        self.z.updateZone(1000, None)
+        self.assertEqual(1, self.a.iteration)
+    
+    def testCanRemoveAnimationWithWildcard(self):
+        """testCanRemoveAnimationWithWildcard: should be able to remove animations with wildcard"""
+        self.a.addAnimation(TestAnimation(), 'cycle-1')
+        self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.z.updateZone(1000, None)
+        self.a.removeAnimationsMatching('cycle-*')
+        self.z.updateZone(1000, None)
+        self.assertEqual(2, self.a.iteration)
+
+    def testFailRemoveAnAnimationNotThere(self):
+        """testFailRemoveAnAnimationNotThere: should fail when removing an animation that isn't there"""
+        self.assertRaises(serge.blocks.animations.AnimationNotFound,
+                          self.a.removeAnimation, 'cycle')
+
+    def testCanStopAnimations(self):
+        """testCanStopAnimations: should be able to stop all animations"""
+        self.a.addAnimation(TestAnimation(), 'cycle-1')
+        self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.a.pauseAnimations()
+        self.z.updateZone(1000, None)
+        self.assertEqual(0, self.a.iteration)
+        self.assertTrue(self.a.animationsPaused())
+
+    def testFailStartStopWhenNotInRightMode(self):
+        """testFailStartStopWhenNotInRightMode: should fail when stopping or starting in the wrong mode"""
+        self.a.addAnimation(TestAnimation(), 'cycle-1')
+        self.assertRaises(serge.blocks.animations.NotPaused, self.a.unpauseAnimations)
+        self.a.pauseAnimations()
+        self.assertRaises(serge.blocks.animations.AlreadyPaused, self.a.pauseAnimations)
+
+    def testSafeStartStopWhenNotInRightMode(self):
+        """testSafeStartStopWhenNotInRightMode: can do safe when stopping or starting in the wrong mode"""
+        self.a.addAnimation(TestAnimation(), 'cycle-1')
+        self.a.unpauseAnimations(safe=True)
+        self.a.pauseAnimations(safe=True)
+        self.z.updateZone(1000, None)
+        self.assertEqual(0, self.a.iteration)
+
+    def testCanStartAnimations(self):
+        """testCanStartAnimations: should be able to restart all animations"""
+        self.a.addAnimation(TestAnimation(), 'cycle-1')
+        self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.a.pauseAnimations()
+        self.a.unpauseAnimations()
+        self.z.updateZone(1000, None)
+        self.assertEqual(2, self.a.iteration)
+        self.assertFalse(self.a.animationsPaused())
+
+    def testCanRestartAllAnimations(self):
+        """testCanRestartAllAnimations: should be able to restart all animations"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        c2 = self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.z.updateZone(1000, None)
+        self.assertEqual(1, c1.iteration)
+        self.assertEqual(1, c2.iteration)
+        #
+        self.a.restartAnimations()
+        self.assertEqual(0, c1.iteration)
+        self.assertEqual(0, c2.iteration)
+
+    def testCanGetAnimation(self):
+        """testCanGetAnimation: should be able to get an animation"""
+        animation = self.a.addAnimation(TestAnimation(), 'cycle')
+        self.assertEqual(animation, self.a.getAnimation('cycle'))
+
+    def testFailGetAnimationNotThere(self):
+        """testFailGetAnimationNotThere: should fail when getting an animation that isn't there"""
+        self.assertRaises(serge.blocks.animations.AnimationNotFound, self.a.getAnimation, 'cycle')
+
+    def testCanClearAnimations(self):
+        """testCanClearAnimations: should be able to clear all animations"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        c2 = self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.a.removeAnimations()
+        self.assertSetEqual(set(), set(self.a.getAnimations()))
+
+    def testCanGetAnimations(self):
+        """testCanGetAnimations: should be able to get all animations"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        c2 = self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.assertSetEqual({c1, c2}, set(self.a.getAnimations()))
+
+    def testStopIndividualAnimation(self):
+        """testStopIndividualAnimation: should be able to stop an individual animation"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        c2 = self.a.addAnimation(TestAnimation(), 'cycle-2')
+        c2.pause()
+        self.z.updateZone(1000, None)
+        self.assertEqual(1, self.a.iteration)
+        self.assertFalse(self.a.animationsPaused())
+
+    def testStartIndividualAnimation(self):
+        """testStartIndividualAnimation: should be able to start an individual animation"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        c2 = self.a.addAnimation(TestAnimation(), 'cycle-2')
+        c2.pause()
+        c2.unpause()
+        self.z.updateZone(1000, None)
+        self.assertEqual(2, self.a.iteration)
+        self.assertFalse(self.a.animationsPaused())
+
+    def testRestartIndividualAnimation(self):
+        """testRestartIndividualAnimation: should be able to restart an individual animation"""
+        c1 = self.a.addAnimation(TestAnimation(), 'cycle-1')
+        c2 = self.a.addAnimation(TestAnimation(), 'cycle-2')
+        self.z.updateZone(1000, None)
+        self.assertEqual(1, c1.iteration)
+        self.assertEqual(1, c2.iteration)
+        #
+        c1.restart()
+        #
+        self.assertEqual(0, c1.iteration)
+        self.assertEqual(1, c2.iteration)
+
+    def testPropertiesOfAnimation(self):
+        """testPropertiesOfAnimation: properties of animation should advance"""
+        c1 = self.a.addAnimation(TestAnimation(10000), 'cycle-1')
+        self.assertEqual(0, c1.iteration)
+        self.assertEqual(0, c1.current)
+        self.assertEqual(0, c1.fraction)
+        #
+        self.z.updateZone(1000, None)
+        #
+        self.assertEqual(1, c1.iteration)
+        self.assertEqual(1000, c1.current)
+        self.assertEqual(0.1, c1.fraction)
+        #
+        self.z.updateZone(4000, None)
+        #
+        self.assertEqual(2, c1.iteration)
+        self.assertEqual(5000, c1.current)
+        self.assertEqual(0.5, c1.fraction)
+
+    def testPropertiesBounded(self):
+        """testPropertiesBounded: properties of animation should be bounded"""
+        c1 = self.a.addAnimation(TestAnimation(10000), 'cycle-1')
+        self.assertEqual(0, c1.iteration)
+        self.assertEqual(0, c1.current)
+        self.assertEqual(0, c1.fraction)
+        #
+        self.z.updateZone(20000, None)
+        #
+        self.assertEqual(1, c1.iteration)
+        self.assertEqual(10000, c1.current)
+        self.assertEqual(1.0, c1.fraction)
+        self.assertTrue(c1.complete)
+
+    def testLoopAnimation(self):
+        """testLoopAnimation: can loop an animation"""
+        c1 = self.a.addAnimation(TestAnimation(10000, loop=True), 'cycle-1')
+        self.assertEqual(0, c1.iteration)
+        self.assertEqual(0, c1.current)
+        self.assertEqual(0, c1.fraction)
+        self.assertEqual(1, c1.direction)
+        #
+        self.z.updateZone(15000, None)
+        #
+        self.assertEqual(1, c1.iteration)
+        self.assertEqual(5000, c1.current)
+        self.assertEqual(0.5, c1.fraction)
+        self.assertFalse(c1.complete)
+        self.assertEqual(-1, c1.direction)
+
+
+class TestAnimation(serge.blocks.animations.Animation):
+    """A simple animation to help test"""
+
+    def update(self):
+        """Update the animation"""
+        self.actor.iteration += 1
+
+
+class TestAnimatedActor(serge.blocks.animations.AnimatedActor):
+    """Test actor"""
+    
+    def __init__(self, tag, name):
+        """Initialise the actor"""
+        super(TestAnimatedActor, self).__init__(tag, name)
+        #
+        self.iteration = 0
+        
+        
+if __name__ == '__main__':
+    unittest.main()
