@@ -581,7 +581,18 @@ class Text(Drawing):
         self.font_size = font_size
         self.angle = 0.0
         self.font_path = Fonts.getItem(font_name)
-        self.font = pygame.font.Font(self.font_path, font_size)
+        log.debug('Temporary font thing for OSX')
+        for i in range(5):
+            try:
+                self.font = pygame.font.Font(self.font_path, font_size)
+            except IOError:
+                log.error('Font problem')
+            else:
+                break
+        else:
+            import pdb
+            pdb.set_trace()
+        #
         self.setText(text)
         self.justify = justify
         self.colour_key = (127, 127, 127)
