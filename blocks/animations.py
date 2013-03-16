@@ -231,3 +231,19 @@ class ColourText(ColourCycle):
         self.obj.setColour(colour)
         if len(colour) == 4:
             self.obj.setAlpha(float(colour[-1]) / 255)
+
+
+class PulseZoom(Animation):
+    """Cycle the zoom of an actor between a high and low value"""
+
+    def __init__(self, start_zoom, end_zoom, duration, loop=False, done=None):
+        """Initialise the animation"""
+        super(PulseZoom, self).__init__(duration, loop=loop, done=done)
+        #
+        self.start_zoom = start_zoom
+        self.end_zoom = end_zoom
+
+    def update(self):
+        """Update the zoom of the object"""
+        zoom = float(self.fraction * (self.end_zoom - self.start_zoom) + self.start_zoom)
+        self.actor.setZoom(zoom)

@@ -225,4 +225,3 @@ class EventAware(object):
             #
             # Reset events
             self._event_handlers[name] = new_items
-        

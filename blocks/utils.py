@@ -9,6 +9,11 @@ import serge
 import serge.render
 import serge.actor
 import serge.world
+import serge.zone
+import serge.engine
+import serge.visual
+import serge.events
+
 
 def createLayers(engine, layers, cls):
     """Create a number of layers in the engine using the given class of layer"""
@@ -20,7 +25,8 @@ def createLayers(engine, layers, cls):
         layer = cls(name, n)
         renderer.addLayer(layer)
         n += 1
-    
+
+
 def createLayersForEngine(engine, layers):
     """Add a number of layers to the engine
     
@@ -29,7 +35,8 @@ def createLayersForEngine(engine, layers):
     
     """
     createLayers(engine, layers, serge.render.Layer)
-    
+
+
 def createVirtualLayersForEngine(engine, layers):
     """Add a number of virtual layers to the engine
     
@@ -42,9 +49,10 @@ def createVirtualLayersForEngine(engine, layers):
     
     """
     createLayers(engine, layers, serge.render.VirtualLayer)        
-        
+
+
 def createWorldsForEngine(engine, worlds):
-    """Add a numer of worlds to the engine
+    """Add a number of worlds to the engine
     
     The words parameter is a list of names of the worlds to create.
     Each world is created with a single active zone which is quite
@@ -70,7 +78,7 @@ def addActorToWorld(world, actor, sprite_name=None, layer_name=None, center_posi
     # If not position then put at the center
     if origin is None and center_position is None:
         renderer = serge.engine.CurrentEngine().getRenderer()
-        center_position = (renderer.width/2.0, renderer.height/2.0)
+        center_position = (renderer.width / 2.0, renderer.height / 2.0)
     #
     # Create the new actor
     if sprite_name is not None:
@@ -87,7 +95,8 @@ def addActorToWorld(world, actor, sprite_name=None, layer_name=None, center_posi
     return actor
 
 
-def addSpriteActorToWorld(world, tag, name, sprite_name, layer_name, center_position=None, physics=None):
+def addSpriteActorToWorld(world, tag, name, sprite_name, layer_name,
+                          center_position=None, physics=None, actor_class=serge.actor.Actor):
     """Create a new actor in the world and set the visual to be the named sprite
     
     If the center position is not specified then it is placed at the center of the screen.
@@ -95,10 +104,12 @@ def addSpriteActorToWorld(world, tag, name, sprite_name, layer_name, center_posi
     """
     #
     # Create the new actor
-    actor = serge.actor.Actor(tag, name)
+    actor = actor_class(tag, name)
     return addActorToWorld(world, actor, sprite_name, layer_name, center_position, physics)
 
-def addVisualActorToWorld(world, tag, name, visual, layer_name, center_position=None, physics=None):
+
+def addVisualActorToWorld(world, tag, name, visual, layer_name,
+                          center_position=None, physics=None, actor_class=serge.actor.Actor):
     """Create a new actor in the world and set the visual 
     
     If the center position is not specified then it is placed at the center of the screen.
@@ -106,27 +117,32 @@ def addVisualActorToWorld(world, tag, name, visual, layer_name, center_position=
     """
     #
     # Create the new actor
-    actor = serge.actor.Actor(tag, name)
+    actor = actor_class(tag, name)
     actor.visual = visual
     return addActorToWorld(world, actor, None, layer_name, center_position, physics)
 
-def addTextToWorld(world, text, name, theme, layer_name):
+
+def addTextToWorld(world, text, name, theme, layer_name, actor_class=serge.actor.Actor):
     """Add some text to the world"""
     L = theme.getProperty
-    actor = addVisualActorToWorld(world, 'text', name, 
-                serge.visual.Text(text, L('%s-colour' % name), 
-                    font_size=L('%s-font-size' % name),
-                    font_name=theme.getPropertyWithDefault(('%s-font' % name), 'DEFAULT')), 
-                layer_name, 
-                center_position=L('%s-position' % name))
+    actor = addVisualActorToWorld(
+        world, 'text', name,
+        serge.visual.Text(
+            text, L('%s-colour' % name),
+            font_size=L('%s-font-size' % name),
+            font_name=theme.getPropertyWithDefault(('%s-font' % name), 'DEFAULT')),
+        layer_name,
+        center_position=L('%s-position' % name),
+        actor_class=actor_class)
     return actor
 
-def addTextItemsToWorld(world, items, theme, layer_name):
+
+def addTextItemsToWorld(world, items, theme, layer_name,  actor_class=serge.actor.Actor):
     """Add multiple text items to the world"""
     for item in items:
         text, name = item[0:2]
         callback = None if len(item) == 2 else item[2]
-        actor = addTextToWorld(world, text, name, theme, layer_name)
+        actor = addTextToWorld(world, text, name, theme, layer_name, actor_class=actor_class)
         if callback:
             actor.linkEvent(serge.events.E_LEFT_CLICK, callback)    
 
