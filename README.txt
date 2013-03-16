@@ -110,3 +110,4 @@ What's New
     Added hasItem method to Registry
     AchievementsManager can reset the achievements
     Fixed bug in AchievementsGrid layers
+    Implemented Font caching via Fonts.getFont to fix OSX pygame issue

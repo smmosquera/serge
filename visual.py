@@ -579,19 +579,9 @@ class Text(Drawing):
         self.colour = colour if len(colour) == 4 else (colour + (255,))
         self.text = text
         self.font_size = font_size
+        self.font_name = font_name
         self.angle = 0.0
-        self.font_path = Fonts.getItem(font_name)
-        log.debug('Temporary font thing for OSX')
-        for i in range(5):
-            try:
-                self.font = pygame.font.Font(self.font_path, font_size)
-            except IOError:
-                log.error('Font problem')
-            else:
-                break
-        else:
-            import pdb
-            pdb.set_trace()
+        self.font = Fonts.getFont(self.font_name, self.font_size)
         #
         self.setText(text)
         self.justify = justify
@@ -649,7 +639,7 @@ class Text(Drawing):
     def setFontSize(self, font_size):
         """Set our font size"""
         self.font_size = int(font_size)
-        self.font = pygame.font.Font(self.font_path, int(font_size))
+        self.font = Fonts.getFont(self.font_name, int(self.font_size))
         self.setText(self.text)
 
     def setAlpha(self, alpha):
@@ -687,7 +677,13 @@ class Text(Drawing):
 
 class FontStore(registry.GeneralStore):
     """A store for fonts"""
-    
+
+    def __init__(self):
+        """Initialise the font registry"""
+        super(FontStore, self).__init__()
+        #
+        self._font_cache = {}
+
     def registerItem(self, name, path):
         """Register a font"""
         #
@@ -732,7 +728,26 @@ class FontStore(registry.GeneralStore):
         super(FontStore, self).clearItems()
         if default:
             self.registerItem('DEFAULT', default)
-        
+
+    def getFont(self, name, size):
+        """Return a font
+
+        This method implements a caching scheme. There seem to be
+        problems on OSX repeatedly creating fonts and so we are
+        caching here. This doesn't seem to be needed on other
+        platforms but we use it anyway as it should give a slight
+        performance bonus.
+
+        """
+        try:
+            return self._font_cache[name, size]
+        except KeyError:
+            return self._font_cache.setdefault(
+                (name, size),
+                pygame.font.Font(self.getItem(name), size)
+            )
+
+
 Fonts = FontStore()
 Fonts.registerItem('DEFAULT', pygame.font.get_default_font())
 
