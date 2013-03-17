@@ -2,6 +2,8 @@
 
 import unittest
 
+import serge.engine
+import serge.actor
 import serge.zone
 import serge.blocks.animations
 import serge.blocks.actors
@@ -114,6 +116,15 @@ class TestAnimations(unittest.TestCase, VisualTester):
         self.z.updateZone(1000, None)
         self.assertEqual(2, self.a.iteration)
         self.assertFalse(self.a.animationsPaused())
+
+    def testCanCreatePaused(self):
+        """testCanCreatePaused: should be able to create an animation in paused state"""
+        a = TestAnimation(paused=True)
+        self.assertTrue(a.paused)
+        a = TestAnimation(paused=False)
+        self.assertFalse(a.paused)
+        a = TestAnimation()
+        self.assertFalse(a.paused)
 
     def testCanRestartAllAnimations(self):
         """testCanRestartAllAnimations: should be able to restart all animations"""
@@ -256,6 +267,51 @@ class TestAnimations(unittest.TestCase, VisualTester):
         self.assertFalse(c1.complete)
         self.assertEqual(-1, c1.direction)
 
+    def testCanPauseALoopingAnimationAtTheEndOfCycle(self):
+        """testCanPauseALoopingAnimationAtTheEndOfCycle: should be able to pause an animation at end of cycle"""
+        c1 = self.a.addAnimation(TestAnimation(10000, loop=True), 'cycle-1')
+        #
+        self.z.updateZone(5000, None)
+        self.assertEqual(1, c1.iteration)
+        self.assertEqual(5000, c1.current)
+        self.assertEqual(0.5, c1.fraction)
+        self.assertEqual(1, c1.direction)
+        self.assertFalse(c1.paused)
+        #
+        c1.pauseAtNextCycle()
+        #
+        # Should now be paused
+        self.z.updateZone(10000, None)
+        self.z.updateZone(10000, None)
+        self.assertEqual(0, c1.current)
+        self.assertEqual(0, c1.fraction)
+        self.assertEqual(1, c1.direction)
+        self.assertTrue(c1.paused)
+        #
+        # Can unpause and continue
+        c1.unpause()
+        self.z.updateZone(10000, None)
+        self.z.updateZone(10000, None)
+        self.z.updateZone(2000, None)
+        self.assertEqual(2000, c1.current)
+        self.assertEqual(0.2, c1.fraction)
+        self.assertEqual(1, c1.direction)
+        self.assertFalse(c1.paused)
+
+    def testCanUseRegistry(self):
+        """testCanUseRegistry: should be able to use the animation registry"""
+        base_animation = TestAnimation()
+        serge.blocks.animations.Animations.registerItem('cycle-1', base_animation)
+        serge.blocks.animations.Animations.registerItem('cycle-2', base_animation)
+        an1 = self.a.addRegisteredAnimation('cycle-1')
+        an2 = self.a.addRegisteredAnimation('cycle-2')
+        an1.pause()
+        self.z.updateZone(1000, None)
+        self.assertEqual(1, self.a.iteration)
+        self.assertFalse(self.a.animationsPaused())
+        self.assertTrue(an1.paused)
+        self.assertFalse(an2.paused)
+
 
 class TestSpecificAnimations(unittest.TestCase, VisualTester):
     """Tests for the SpecificAnimations"""
@@ -263,6 +319,7 @@ class TestSpecificAnimations(unittest.TestCase, VisualTester):
     def setUp(self):
         """Set up the tests"""
         self.z = serge.zone.Zone()
+        self.e = serge.engine.Engine()
 
     def tearDown(self):
         """Tear down the tests"""
@@ -294,6 +351,47 @@ class TestSpecificAnimations(unittest.TestCase, VisualTester):
         self.assertEqual((0, 255, 0, 100), a.visual.colour)
         self.z.updateZone(5000, None)
         self.assertEqual((255. / 2, 255. / 2, 0, 150), a.visual.colour)
+
+    def testPulseZoom(self):
+        """testPulseZoom: should be able to cycle the zoom"""
+        a = serge.blocks.animations.AnimatedActor('a', 'a')
+        self.z.addActor(a)
+        #
+        zoom = serge.blocks.animations.PulseZoom(
+            0.8, 1.2, 5000, True
+        )
+        a.addAnimation(zoom, 'zoom-pulse')
+        #
+        self.z.updateZone(0, None)
+        self.assertEqual(0.8, a.zoom)
+        self.z.updateZone(2500, None)
+        self.assertEqual(1.0, a.zoom)
+        self.z.updateZone(2500, None)
+        self.assertEqual(1.2, a.zoom)
+        self.z.updateZone(5000, None)
+        self.assertEqual(0.8, a.zoom)
+
+    def testPulseWiggle(self):
+        """testPulseWiggle: should be able to wiggle an actor"""
+        a = serge.blocks.animations.AnimatedActor('a', 'a')
+        self.z.addActor(a)
+        #
+        wiggle = serge.blocks.animations.PulseRotate(
+            -45, 45, 5000, True
+        )
+        a.addAnimation(wiggle, 'wiggle')
+        #
+        # The rotation middle is the middle of the range so this is where it should start
+        self.z.updateZone(0, None)
+        self.assertAlmostEqual(0, a.getAngle())
+        self.z.updateZone(2500, None)
+        self.assertAlmostEqual(45, a.getAngle())
+        self.z.updateZone(2500, None)
+        self.assertAlmostEqual(0, a.getAngle())
+        self.z.updateZone(2500, None)
+        self.assertAlmostEqual(-45, a.getAngle())
+        self.z.updateZone(2500, None)
+        self.assertAlmostEqual(0, a.getAngle())
 
 
 class TestAnimation(serge.blocks.animations.Animation):

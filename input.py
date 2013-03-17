@@ -4,9 +4,10 @@ import pygame
 import common
 import actor
 import render
+import geometry
 pymunk = common.pymunk
 
-#These represet mouse states we can query.
+#These represent mouse states we can query.
 M_LEFT = 1
 M_MIDDLE = 2
 M_RIGHT = 3
@@ -20,6 +21,7 @@ MOUSE = 1
 #Type of key
 K_LETTER = 0
 K_CONTROL = 1
+
 
 class KeyState(object):
     """Represents the state of keyboard keys"""
@@ -261,6 +263,10 @@ class Mouse(object):
         absolute = pymunk.Vec2d(*pygame.mouse.get_pos())/self.engine.getRenderer().getCamera().zoom
         x, y, _, _ = self.engine.getRenderer().getCamera().getSpatial()
         return absolute+pymunk.Vec2d(x, y)
+
+    def getScreenPoint(self):
+        """Return the location of the mouse relative to the screen as a point"""
+        return geometry.Point(*self.getScreenPos())
 
     def getStaticScreenPos(self):
         """Return the pixel location relative to the screen and NOT camera"""

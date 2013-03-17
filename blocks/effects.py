@@ -5,6 +5,7 @@ import math
 import pygame
 import random
 
+import serge.serialize
 import serge.actor
 import serge.events
 
@@ -15,13 +16,24 @@ class InvalidMotion(Exception):
 
 class Effect(serge.actor.Actor):
     """A generic effect"""
-    
+
+    my_properties = (
+        serge.serialize.B('loop', False, 'whether we are looping or not'),
+        serge.serialize.B('paused', False, 'whether we are paused or not'),
+        serge.serialize.B('done', False, 'whether we are complete or not'),
+        serge.serialize.B('persistent', False, 'whether we are retained after completing'),
+    )
+
     def __init__(self, done=None, persistent=False):
         """Initialise the Effect"""
         super(Effect, self).__init__('effect')
-        self.paused = False
         self.persistent = persistent
         self.done = done
+        self.init()
+
+    def init(self):
+        """Initialise the effect"""
+        self.paused = False
         self.done_recorded = False
         
     def pause(self):

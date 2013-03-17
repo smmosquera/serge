@@ -2,8 +2,13 @@
 
 
 import fnmatch
+import math
 
 import serge.actor
+import serge.engine
+import serge.serialize
+import serge.registry
+import serge.sound
 import serge.blocks.effects
 
 
@@ -43,6 +48,10 @@ class AnimatedActor(serge.actor.Actor):
         animation.setActor(self)
         animation.setName(name)
         return animation
+
+    def addRegisteredAnimation(self, name):
+        """Add an animation from the animation registry"""
+        return self.addAnimation(Animations.getItem(name), name)
 
     def removeAnimation(self, name):
         """Remove a named animation"""
@@ -111,22 +120,25 @@ class AnimatedActor(serge.actor.Actor):
         #
         if not self._paused:
             for animation in self.animations.values():
-                if not animation.paused:
-                    animation.updateActor(interval, world)
+                animation.updateActor(interval, world)
 
 
 class Animation(serge.blocks.effects.Effect):
     """The basic animation class"""
 
-    def __init__(self, duration=1000, done=None, loop=False):
+    my_properties = (
+        serge.serialize.F('duration', 0, 'the length of time the animation runs for in one direction'),
+    )
+
+    def __init__(self, duration=1000, done=None, loop=False, paused=False):
         """Initialise the animation"""
+        self.actor = None
+        self.duration = duration
         super(Animation, self).__init__(done=done, persistent=True)
         #
-        self.actor = None
-        self.name = None
-        self.duration = duration
+        self.init()
+        self.paused = paused
         self.loop = loop
-        self._initProperties()
 
     def setActor(self, actor):
         """Set our actor"""
@@ -136,8 +148,10 @@ class Animation(serge.blocks.effects.Effect):
         """Set our name"""
         self.name = name
 
-    def _initProperties(self):
+    def init(self):
         """Initialise the properties"""
+        super(Animation, self).init()
+        self.name = None
         self.start = 0
         self.end = self.duration
         self.current = 0
@@ -145,26 +159,40 @@ class Animation(serge.blocks.effects.Effect):
         self.fraction = 0.0
         self.complete = False
         self.direction = 1
+        self._pause_next_cycle = False
+
+    def unpause(self):
+        """Un-pause the animation"""
+        super(Animation, self).unpause()
+        self._pause_next_cycle = False
 
     def restart(self):
         """Restart the animation"""
-        self._initProperties()
+        self.init()
         self.update()
 
     def updateActor(self, interval, world):
         """Update the animation effect"""
         super(Animation, self).updateActor(interval, world)
         #
+        # Do not advance time if we are paused
+        if self.paused:
+            return
+        #
         self.current += self.direction * interval
         self.iteration += 1
         #
         # Watch for bouncing
         if self.loop:
-            if self.direction == 1 and self.current > self.end:
+            if self.direction == 1 and self.current >= self.end:
                 self.current = self.duration - (self.current - self.duration)
                 self.direction *= -1
-            elif self.direction == -1 and self.current < 0:
-                self.current = -self.current
+            elif self.direction == -1 and self.current <= 0:
+                if self._pause_next_cycle:
+                    self.current = 0
+                    self.pause()
+                else:
+                    self.current = -self.current
                 self.direction *= -1
         #
         # Map back into proper space
@@ -184,12 +212,42 @@ class Animation(serge.blocks.effects.Effect):
         self._effectComplete(None)
         self.complete = True
 
+    def pauseAtNextCycle(self):
+        """Set the animation to pause at the next time it renews a cycle"""
+        self._pause_next_cycle = True
+
     def update(self):
         """The main method implementing the animation effect
 
         This is the method you should implement
 
         """
+
+
+class AnimationRegistry(serge.registry.GeneralStore):
+    """A place to register animations so they can be easily re-used"""
+
+    def _registerItem(self, name, item):
+        """Register the animation"""
+        #
+        # Remember the settings used to create the sound
+        self.raw_items.append([name, item])
+        self.items[name] = item
+        return None
+
+    def getItem(self, name):
+        """Return an animation
+
+        We need to deepcopy the animation to avoid returning the same one
+        each time.
+
+        """
+        item = super(AnimationRegistry, self).getItem(name)
+        return item.copy()
+
+
+# Singleton animation registry
+Animations = AnimationRegistry()
 
 #
 # Now we have some specific examples of useful animations
@@ -233,17 +291,129 @@ class ColourText(ColourCycle):
             self.obj.setAlpha(float(colour[-1]) / 255)
 
 
-class PulseZoom(Animation):
+class MouseOverAnimation(Animation):
+    """A base class to use for animations that can be activated by mouse over
+
+    Animations extending this class can set mouse_over_only to True and then
+    the animation will run only when the mouse is over the actor. When the
+    mouse moves out then the animation will run to the beginning of the
+    cycle and then stop.
+
+    """
+
+    my_properties = (
+        serge.serialize.B('mouse_over_only', False, 'whether we only animate on mouse over'),
+    )
+
+    def __init__(self, duration, mouse_over_only, loop=False, done=None, paused=False):
+        """Initialise the animation"""
+        super(MouseOverAnimation, self).__init__(duration, loop=loop, done=done, paused=paused)
+        #
+        self.mouse_over_only = mouse_over_only
+
+    def init(self):
+        """Initialise the animation"""
+        super(MouseOverAnimation, self).init()
+        self.mouse = serge.engine.CurrentEngine().getMouse()
+
+    def updateActor(self, interval, world):
+        """Update the animation"""
+        #
+        # Check if we should re-activate
+        if self.mouse_over_only:
+            inside = self.mouse.getScreenPoint().isInside(self.actor)
+            if inside:
+                if self.paused:
+                    self.unpause()
+            else:
+                self.pauseAtNextCycle()
+        #
+        super(MouseOverAnimation, self).updateActor(interval, world)
+
+
+class PulseZoom(MouseOverAnimation):
     """Cycle the zoom of an actor between a high and low value"""
 
-    def __init__(self, start_zoom, end_zoom, duration, loop=False, done=None):
+    my_properties = (
+        serge.serialize.F('start_zoom', False, 'the initial zoom value'),
+        serge.serialize.F('end_zoom', False, 'the final zoom value'),
+    )
+
+    def __init__(self, start_zoom, end_zoom, duration,
+                 loop=False, done=None, mouse_over_only=False, paused=False):
         """Initialise the animation"""
-        super(PulseZoom, self).__init__(duration, loop=loop, done=done)
+        super(PulseZoom, self).__init__(
+            duration, mouse_over_only=mouse_over_only, loop=loop, done=done, paused=paused)
         #
         self.start_zoom = start_zoom
         self.end_zoom = end_zoom
 
     def update(self):
         """Update the zoom of the object"""
-        zoom = float(self.fraction * (self.end_zoom - self.start_zoom) + self.start_zoom)
-        self.actor.setZoom(zoom)
+        super(PulseZoom, self).update()
+        if not self.paused:
+            zoom = float(self.fraction * (self.end_zoom - self.start_zoom) + self.start_zoom)
+            self.actor.setZoom(zoom)
+
+
+class PulseRotate(MouseOverAnimation):
+    """Cycle the rotation of an actor between a high and low value
+
+    The rotation limits are set as the min and max angle. The actual
+    start point of the animation is half way between the two. This
+    means that if you stop it on a cycle it will return to the mid point.
+
+    """
+
+    my_properties = (
+        serge.serialize.F('min_angle', False, 'the low value of the angle'),
+        serge.serialize.F('max_angle', False, 'the high value of the angle'),
+    )
+
+    def __init__(self, min_angle, max_angle, duration,
+                 loop=False, done=None, mouse_over_only=False, paused=False):
+        """Initialise the animation"""
+        super(PulseRotate, self).__init__(
+            duration, mouse_over_only=mouse_over_only, loop=loop, done=done, paused=paused)
+        #
+        self.min_angle = min_angle
+        self.max_angle = max_angle
+
+    def update(self):
+        """Update the angle of the object"""
+        super(PulseRotate, self).update()
+        if not self.paused:
+            time_fraction = self.fraction if self.direction == 1 else 2.0 - self.fraction
+            effective_fraction = math.sin(time_fraction * math.pi) / 2 + 0.5
+            angle = float(effective_fraction * (self.max_angle - self.min_angle) + self.min_angle)
+            self.actor.setAngle(angle)
+
+
+class MouseOverSound(Animation):
+    """Plays a sound when mousing over something"""
+
+    my_properties = (
+        serge.serialize.S('sound', '', 'the sound to play'),
+        serge.serialize.B('over', False, 'whether the mouse is over us'),
+    )
+
+    def __init__(self, sound):
+        """Initialise the animation"""
+        super(MouseOverSound, self).__init__(duration=1)
+        #
+        self.sound = sound
+
+    def init(self):
+        """Initialise the animation"""
+        super(MouseOverSound, self).init()
+        self.mouse = serge.engine.CurrentEngine().getMouse()
+        self.over = False
+
+    def update(self):
+        """Update the animation"""
+        if self.mouse.getScreenPoint().isInside(self.actor):
+            if not self.over:
+                serge.sound.Sounds.play(self.sound)
+                self.over = True
+        else:
+            self.over = False
