@@ -447,6 +447,46 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         self.checkRect(self.r.surface, (255, 0, 0, 255), 110, 66, 20, 30, 'three added - left')
         self.checkRect(self.r.surface, (255, 0, 0, 255), 110, 133, 20, 30, 'three added - right')
 
+    def testVerticalBarFixedItemHeight(self):
+        """testVerticalBarFixedItemHeight: should be able to have a vertical bar with fixed item height"""
+        b = serge.blocks.layout.VerticalBar('bar', width=100, item_height=20)
+        s = serge.blocks.visualblocks.Rectangle((20, 30), (255, 0, 0, 255))
+        b.setSpatial(60, 50, 100, 100)
+        #
+        # First item should be added at the top
+        b1 = b.addActor(self.getActor(s, 'initial'))
+        self.assertEqual(60 + 100 / 2, b1.x)
+        self.assertEqual(50 + 20 / 2, b1.y)
+        #
+        # Next item should be added below
+        b2 = b.addActor(self.getActor(s, 'second'))
+        self.assertEqual(60 + 100 / 2, b2.x)
+        self.assertEqual(20, b2.y - b1.y)
+
+    def testFailCombiningHeightAndItemHeight(self):
+        """testFailCombiningHeightAndItemHeight: should fail if use item_height and height"""
+        self.assertRaises(ValueError, serge.blocks.layout.VerticalBar, 'bar', width=100, height=100, item_height=20)
+
+    def testHorizontalBarFixedItemWidth(self):
+        """testHorizontalBarFixedItemWidth: should be able to have a horizontal bar with fixed item width"""
+        b = serge.blocks.layout.HorizontalBar('bar', height=100, item_width=20)
+        s = serge.blocks.visualblocks.Rectangle((20, 30), (255, 0, 0, 255))
+        b.setSpatial(60, 50, 100, 100)
+        #
+        # First item should be added at the top
+        b1 = b.addActor(self.getActor(s, 'initial'))
+        self.assertEqual(60 + 20 / 2, b1.x)
+        self.assertEqual(50 + 100 / 2, b1.y)
+        #
+        # Next item should be added below
+        b2 = b.addActor(self.getActor(s, 'second'))
+        self.assertEqual(20, b2.x - b1.x)
+        self.assertEqual(50 + 100 / 2, b2.y)
+
+    def testFailCombiningWidthAndItemWidth(self):
+        """testFailCombiningWidthAndItemWidth: should fail if use item_width and width"""
+        self.assertRaises(ValueError, serge.blocks.layout.VerticalBar, 'bar', width=100, height=100, item_width=20)
+
     def testAddingToBarAddsToWorld(self):
         """testAddingToBarAddsToWorld: should add to world when adding to a bar"""
         b = serge.blocks.layout.VerticalBar('bar', width=100, height=100)

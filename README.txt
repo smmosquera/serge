@@ -111,3 +111,4 @@ What's New
     AchievementsManager can reset the achievements
     Fixed bug in AchievementsGrid layers
     Implemented Font caching via Fonts.getFont to fix OSX pygame issue
+    VerticalBar and HorizontalBar blocks can now specify item_width / height to fill from left / top

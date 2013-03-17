@@ -9,13 +9,23 @@ class CellEmpty(Exception): """The cell being accessed was empty"""
 class UnknownActor(Exception): """The actor was not found"""
 class AlreadyInCell(Exception): """The actor was already in this cell"""
 
+
 class Container(serge.actor.MountableActor):
     """A layout container that contains actors"""
 
     def __init__(self, tag, name='', width=None, height=None, 
-            background_colour=None, background_layer=None, background_sprite=None):
+                 background_colour=None, background_layer=None, background_sprite=None,
+                 item_width=None, item_height=None):
         """Initialise the Bar"""
         super(Container, self).__init__(tag, name)
+        #
+        # Item widths and heights - you cannot specify these and the overall
+        # dimension
+        if (item_width and width) or (item_height and height):
+            raise ValueError('Cannot specify both item height/width and overall height/width')
+        #
+        self.item_height = item_height
+        self.item_width = item_width
         #
         # Default sizes are the extent of the screen
         engine = serge.engine.CurrentEngine()
@@ -33,7 +43,7 @@ class Container(serge.actor.MountableActor):
         if background_sprite:
             self.setBackgroundSprite(background_sprite)
         self.background_layer = background_layer if background_layer else None
-        
+
     def setLayerName(self, name):
         """Set the layer name"""
         super(Container, self).setLayerName(self.background_layer if self.background_layer else name)
@@ -80,10 +90,11 @@ class Bar(Container):
         for i in range(number):
             a = serge.actor.Actor('blank')
             self.addActor(a)
-             
+
+
 class HorizontalBar(Bar):
     """A horizontal bar of actors"""
-    
+
     def _redoLocations(self):
         """Reset the locations of the objects within us"""
         self.log.debug('Resetting locations')
@@ -94,21 +105,22 @@ class HorizontalBar(Bar):
 
     def getCoords(self, i):
         """Return the coordinates of our ith location"""
-        width = float(self.width) / len(self.children)
+        width = self.item_width if self.item_width else float(self.width) / len(self.children)
         left, top, _, _ = self.getSpatial()
-        return left + width*(i+0.5), top + self.height*0.5
-               
+        return left + width * (i + 0.5), top + self.height * 0.5
+
+
 class VerticalBar(Bar):
     """A vertical bar of actors"""
-    
+
     def _redoLocations(self):
         """Reset the locations of the objects within us"""
         self.log.debug('Resetting locations')
         if self.children:
-            height = float(self.height) / len(self.children)
+            height = self.item_height if self.item_height  else float(self.height) / len(self.children)
             left, top, _, _ = self.getSpatial()
             for i, actor in enumerate(self.children):
-                actor.moveTo(left + self.width*0.5, top + height*(i+0.5))
+                actor.moveTo(left + self.width * 0.5, top + height * (i + 0.5))
                 self.log.debug('Set %s to %d, %d' % (actor.getNiceName(), actor.x, actor.y))
 
 
