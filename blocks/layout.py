@@ -77,7 +77,6 @@ class Container(serge.actor.MountableActor):
 class Bar(Container):
     """A bar of actors - useful for user interfaces"""
     
-        
     def addActor(self, actor, layer_name=None):
         """Add an actor to the bar"""
         self.addChild(actor)
@@ -106,7 +105,8 @@ class HorizontalBar(Bar):
     def getCoords(self, i):
         """Return the coordinates of our ith location"""
         width = self.item_width if self.item_width else float(self.width) / len(self.children)
-        left, top, _, _ = self.getSpatial()
+        left = self.x if self.item_width else self.getSpatial()[0]
+        top = self.getSpatial()[1]
         return left + width * (i + 0.5), top + self.height * 0.5
 
 
@@ -118,7 +118,8 @@ class VerticalBar(Bar):
         self.log.debug('Resetting locations')
         if self.children:
             height = self.item_height if self.item_height  else float(self.height) / len(self.children)
-            left, top, _, _ = self.getSpatial()
+            left = self.getSpatial()[0]
+            top = self.y if self.item_height else self.getSpatial()[1]
             for i, actor in enumerate(self.children):
                 actor.moveTo(left + self.width * 0.5, top + height * (i + 0.5))
                 self.log.debug('Set %s to %d, %d' % (actor.getNiceName(), actor.x, actor.y))

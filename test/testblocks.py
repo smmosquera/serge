@@ -456,7 +456,7 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         # First item should be added at the top
         b1 = b.addActor(self.getActor(s, 'initial'))
         self.assertEqual(60 + 100 / 2, b1.x)
-        self.assertEqual(50 + 20 / 2, b1.y)
+        self.assertEqual(50 + 100 / 2 + 20 / 2, b1.y)
         #
         # Next item should be added below
         b2 = b.addActor(self.getActor(s, 'second'))
@@ -475,7 +475,7 @@ class TestLayoutBlocks(unittest.TestCase, VisualTester):
         #
         # First item should be added at the top
         b1 = b.addActor(self.getActor(s, 'initial'))
-        self.assertEqual(60 + 20 / 2, b1.x)
+        self.assertEqual(60 + 100 / 2 + 20 / 2, b1.x)
         self.assertEqual(50 + 100 / 2, b1.y)
         #
         # Next item should be added below
