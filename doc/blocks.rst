@@ -17,10 +17,26 @@ Building Blocks
     :undoc-members:
     :show-inheritance:
 
+:mod:`animations` Module
+------------------------
+
+.. automodule:: serge.blocks.animations
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`behaviours` Module
 ------------------------
 
 .. automodule:: serge.blocks.behaviours
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`concurrent.futures` Module
+--------------------------
+
+.. automodule:: serge.blocks.concurrent.futures
     :members:
     :undoc-members:
     :show-inheritance:
