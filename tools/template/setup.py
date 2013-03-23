@@ -32,6 +32,7 @@ setup(name='%(name)s',
 
       packages=[
         'serge', 'serge.blocks', 'serge.tools', 'serge.tools.template', 'game',
+        'serge.blocks.concurrent', 'serge.blocks.concurrent.futures'
       ],
       package_dir={'':'.'},
 

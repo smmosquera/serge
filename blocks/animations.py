@@ -53,6 +53,11 @@ class AnimatedActor(serge.actor.Actor):
         """Add an animation from the animation registry"""
         return self.addAnimation(Animations.getItem(name), name)
 
+    def addRegisteredAnimations(self, names):
+        """Add a number of animations from the animation registry"""
+        for name in names:
+            self.addRegisteredAnimation(name)
+
     def removeAnimation(self, name):
         """Remove a named animation"""
         try:
