@@ -42,7 +42,7 @@ class ScreenActor(serge.actor.CompositeActor):
         self.broadcaster = serge.events.getEventBroadcaster()
         
 
-class RepeatedVisualActor(serge.actor.Actor):
+class RepeatedVisualActor(serge.blocks.animations.AnimatedActor):
     """An actor that shows multiple copies of a visual representation
     
     This actor is useful for showing the number of lives or missiles
