@@ -164,6 +164,7 @@ class Animation(serge.blocks.effects.Effect):
         self.fraction = 0.0
         self.complete = False
         self.direction = 1
+        self.interval = 0
         self._pause_next_cycle = False
 
     def unpause(self):
@@ -186,6 +187,7 @@ class Animation(serge.blocks.effects.Effect):
         #
         self.current += self.direction * interval
         self.iteration += 1
+        self.interval = interval
         #
         # Watch for bouncing
         if self.loop:
@@ -294,6 +296,26 @@ class ColourText(ColourCycle):
         self.obj.setColour(colour)
         if len(colour) == 4:
             self.obj.setAlpha(float(colour[-1]) / 255)
+
+
+class MoveWithVelocity(Animation):
+    """Animate the motion of an actor with a constant velocity"""
+
+    my_properties = (
+        serge.serialize.F('vx', 0.0, 'the x velocity to move with'),
+        serge.serialize.F('vy', 0.0, 'the y velocity to move with'),
+    )
+
+    def __init__(self, (vx, vy), loop=False, done=None):
+        """Initialise the animation"""
+        super(MoveWithVelocity, self).__init__(duration=1000, loop=loop, done=done)
+        #
+        self.vx = vx
+        self.vy = vy
+
+    def update(self):
+        """Update the actor"""
+        self.actor.move(self.interval / 1000.0 * self.vx, self.interval / 1000.0 * self.vy)
 
 
 class MouseOverAnimation(Animation):
